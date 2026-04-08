@@ -3,38 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PVC Optimizer v4.1 - Terrain</title>
+    <title>PVC Optimizer v5.0 - Expert Terrain</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen p-2 md:p-4 font-sans text-slate-900">
-    <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-slate-900">
+    <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-blue-900">
         
         <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold italic tracking-tighter">OPTIMISEUR PVC <span class="text-blue-400 text-sm">v4.1</span></h1>
+            <h1 class="text-xl font-bold italic">PVC OPTIMIZER <span class="text-blue-400 text-sm">v5.0 ULTRA-NESTING</span></h1>
             <button onclick="resetAll()" class="bg-red-600 hover:bg-red-700 text-[10px] font-bold py-2 px-4 rounded uppercase transition-all shadow-lg active:scale-95">Remettre à zéro</button>
         </div>
 
         <div class="p-4 grid lg:grid-cols-4 gap-6">
             <div class="space-y-3">
-                <h2 class="font-bold text-orange-700 border-b-2 border-orange-100 pb-1 text-xs uppercase tracking-tight">Annelés (5.8m)</h2>
+                <h2 class="font-bold text-orange-700 border-b-2 border-orange-100 pb-1 text-xs uppercase">Annelés (5.8m)</h2>
                 <div id="annel-inputs" class="space-y-1"></div>
             </div>
 
             <div class="space-y-3">
-                <h2 class="font-bold text-blue-800 border-b-2 border-blue-100 pb-1 text-xs uppercase tracking-tight">Assainissement CR8 (3m)</h2>
+                <h2 class="font-bold text-blue-800 border-b-2 border-blue-100 pb-1 text-xs uppercase">CR8 (3m)</h2>
                 <div id="cr8-inputs" class="space-y-1"></div>
             </div>
 
             <div class="space-y-3">
-                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-1 text-xs uppercase tracking-tight">Évacuation M1 (4m)</h2>
+                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-1 text-xs uppercase">Évacuation M1 (4m)</h2>
                 <div id="evac-inputs" class="space-y-1"></div>
             </div>
 
             <div class="bg-slate-900 rounded-xl p-5 text-white h-fit sticky top-4 shadow-xl">
-                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-700 pb-2">Rapport de Charge</h2>
+                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-700 pb-2 text-white/50 text-xs">Rapport de Charge</h2>
                 
                 <div class="mb-6 bg-slate-800 p-4 rounded-lg text-center border border-slate-700">
-                    <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Surface</span>
+                    <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Surface Frontale</span>
                     <span id="occ-text" class="text-4xl font-black">0%</span>
                     <div class="w-full bg-slate-700 h-2 rounded-full mt-3 overflow-hidden">
                         <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-700" style="width: 0%"></div>
@@ -42,10 +42,10 @@
                 </div>
 
                 <div id="results-container" class="space-y-3">
-                    <p class="text-[10px] text-slate-500 italic text-center leading-tight">Cochez une case "MAX" pour lancer l'optimisation d'un diamètre.</p>
+                    <p class="text-[10px] text-slate-500 italic text-center leading-tight">Cochez "MAX" pour optimiser un diamètre.</p>
                 </div>
 
-                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded uppercase text-xs tracking-widest transition-all">Lancer le calcul</button>
+                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded uppercase text-xs tracking-widest transition-all shadow-[0_4px_0_rgb(37,99,235)] active:translate-y-1 active:shadow-none">Lancer le calcul</button>
             </div>
         </div>
     </div>
@@ -57,23 +57,24 @@
             evac: { 200:3.9, 160:3.2, 125:3.2, 100:3.0, 80:3.0, 75:3.0, 50:3.0, 40:3.0, 32:3.0 }
         };
 
-        const container = { w: 2340, h: 2680, coeff: 1.08 }; 
+        // Coefficient ultra-serré (1.02) car imbrication tulipes totale
+        const container = { w: 2340, h: 2680, coeff: 1.02 }; 
 
         function init() {
             const render = (id, data, prefix) => {
                 const box = document.getElementById(id);
                 box.innerHTML = '';
-                Object.keys(data).forEach(dn => {
+                Object.keys(data).sort((a,b) => b-a).forEach(dn => {
                     box.innerHTML += `
                         <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-[12px]">
                             <div class="flex items-center">
-                                ${prefix==='evac'?`<input type="checkbox" id="check-${dn}" onchange="toggleMode('${dn}')" class="mr-2 h-4 w-4 accent-blue-600 shadow-none">`:''}
+                                ${prefix==='evac'?`<input type="checkbox" id="check-${dn}" onchange="toggleMode('${dn}')" class="mr-2 h-4 w-4 accent-blue-600">`:''}
                                 <span class="font-bold text-slate-700">DN ${dn}</span>
                             </div>
                             <div id="wrap-${prefix}-${dn}">
-                                <input type="number" id="q-${prefix}-${dn}" placeholder="" oninput="lancerCalcul()" class="w-16 border-b-2 border-slate-200 text-right outline-none focus:border-blue-500 bg-transparent">
+                                <input type="number" id="q-${prefix}-${dn}" placeholder="" oninput="lancerCalcul()" class="w-16 border-b border-slate-300 text-right outline-none focus:border-blue-500 bg-transparent">
                             </div>
-                            <span id="lbl-${dn}" class="hidden text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded">MAX</span>
+                            <span id="lbl-${dn}" class="hidden text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded">MAX</span>
                         </div>`;
                 });
             };
@@ -108,7 +109,7 @@
             Object.keys(specs.annel).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-annel-${dn}`).value) || 0;
                 surfOcc += Math.ceil(q / 2) * Math.pow(specs.annel[dn] * container.coeff, 2);
-                const di = specs.annel[dn] - 40; // Estimation épaisseur paroi
+                const di = specs.annel[dn] - 40; 
                 for(let i=0; i<q; i++) di_list.push({di: di, len: 5.8});
             });
 
@@ -139,21 +140,24 @@
 
             optimizationDns.sort((a,b) => b-a).forEach(targetDn => {
                 let count = 0;
-                // Télescopage ultra-agressif (Taux de remplissage 95%)
+                
+                // Nesting Multi-couches : On utilise 100% du DI disponible avec un facteur de packing élevé
                 di_list.forEach(vol => {
-                    let ratio = vol.di / (targetDn * 1.05);
-                    let n = Math.floor(Math.pow(ratio, 2) * 0.95);
+                    // Ratio de remplissage terrain (vides entre tubes imbriqués minimisés)
+                    let n = Math.floor(Math.pow(vol.di / (targetDn * 1.02), 2) * 0.98);
                     if(n < 1 && vol.di >= targetDn) n = 1;
                     count += (n * (vol.len / 4));
                 });
-                // Espace restant
+
+                // Espace restant dans le TC (on considère 4 piles de 3m car imbrication possible sur toute la profondeur)
                 let resteSurf = Math.max(0, surfTotal - surfOcc);
-                count += Math.floor(resteSurf / Math.pow(targetDn * 1.05, 2)) * 3;
+                count += Math.floor(resteSurf / Math.pow(targetDn * 1.03, 2)) * 3.8; // 3.8 au lieu de 3 car on comble les interstices des tulipes
                 
                 resContainer.innerHTML += `
-                    <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white">
-                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1">DN ${targetDn} Suggéré</p>
+                    <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white transform transition-transform hover:scale-105">
+                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1 tracking-tighter text-blue-100">Quantité MAX DN ${targetDn}</p>
                         <p class="text-4xl font-black">${Math.floor(count)}</p>
+                        <p class="text-[9px] mt-1 opacity-70 italic font-light italic">Tubes de 4m (Optimisé Terrain)</p>
                     </div>`;
                 if(targetDn == optimizationDns[0]) surfOcc = surfTotal; 
             });
@@ -162,10 +166,10 @@
             document.getElementById('occ-text').innerText = Math.min(occ, 100).toFixed(1) + "%";
             const g = document.getElementById('gauge-fill');
             g.style.width = Math.min(occ, 100) + "%";
-            g.style.backgroundColor = occ > 100 ? '#ef4444' : '#3b82f6';
+            g.style.backgroundColor = occ > 100 ? '#ef4444' : (occ > 95 ? '#f59e0b' : '#3b82f6');
         }
 
-        window.onload = init;
+            window.onload = init;
     </script>
 </body>
 </html>
