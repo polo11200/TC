@@ -3,178 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PVC Optimizer v3.2</title>
+    <title>PVC Optimizer v4.0 - Réalité Terrain</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-200 min-h-screen p-4 font-sans">
-    <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-slate-800">
+<body class="bg-slate-200 min-h-screen p-2 md:p-4 font-sans text-slate-900">
+    <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-blue-600">
         
-        <div class="bg-slate-800 text-white p-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tighter">OPTIMISEUR PVC <span class="text-blue-400">v3.2</span></h1>
-                <p class="text-[10px] opacity-75 uppercase">40' High Cube | Tulipes alignées</p>
-            </div>
-            <button onclick="resetAll()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 px-4 rounded-lg transition-all shadow-lg active:scale-95 flex items-center">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                REMETTRE À ZÉRO
-            </button>
+        <div class="bg-slate-800 text-white p-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold italic">PVC OPTIMIZER <span class="text-blue-400 text-sm">v4.0 REAL-LOG</span></h1>
+            <button onclick="resetAll()" class="bg-red-600 text-[10px] font-bold py-1 px-3 rounded uppercase">Reset</button>
         </div>
 
-        <div class="p-6 grid lg:grid-cols-3 gap-8">
-            <div>
-                <h2 class="font-bold text-blue-800 border-b-2 border-blue-100 pb-2 mb-4 uppercase text-sm tracking-widest">Assainissement CR8 (3m)</h2>
-                <div id="cr8-inputs" class="space-y-2"></div>
+        <div class="p-4 grid lg:grid-cols-4 gap-6">
+            <div class="space-y-3">
+                <h2 class="font-bold text-orange-700 border-b-2 border-orange-100 pb-1 text-xs uppercase">Annelés (5.8m)</h2>
+                <div id="annel-inputs" class="space-y-1"></div>
             </div>
 
-            <div>
-                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-2 mb-4 uppercase text-sm tracking-widest">Évacuations M1 (4m)</h2>
-                <div id="evac-inputs" class="space-y-2"></div>
+            <div class="space-y-3">
+                <h2 class="font-bold text-blue-800 border-b-2 border-blue-100 pb-1 text-xs uppercase">CR8 (3m)</h2>
+                <div id="cr8-inputs" class="space-y-1"></div>
             </div>
 
-            <div class="bg-slate-900 rounded-xl p-6 text-white h-fit lg:sticky lg:top-4">
-                <h2 class="text-center font-bold text-blue-400 mb-6 uppercase tracking-wider text-sm border-b border-slate-700 pb-2">Rapport de Charge</h2>
+            <div class="space-y-3">
+                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-1 text-xs uppercase">Évacuation (4m)</h2>
+                <div id="evac-inputs" class="space-y-1"></div>
+            </div>
+
+            <div class="bg-slate-900 rounded-xl p-5 text-white h-fit sticky top-4">
+                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-xs tracking-widest border-b border-slate-700 pb-2">Charge TC 40' HC</h2>
                 
-                <div class="mb-8 bg-slate-800 p-4 rounded-lg">
-                    <div class="flex justify-between text-[10px] uppercase text-slate-400 mb-1">
-                        <span>Saturation Frontale</span>
-                        <span id="occ-text" class="font-bold text-white">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div class="mb-6 bg-slate-800 p-3 rounded-lg text-center">
+                    <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Réelle estimée</span>
+                    <span id="occ-text" class="text-3xl font-black">0%</span>
+                    <div class="w-full bg-slate-700 h-2 rounded-full mt-2 overflow-hidden">
                         <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
                     </div>
                 </div>
 
-                <div id="results-container" class="space-y-4">
-                    </div>
+                <div id="results-container" class="space-y-3"></div>
 
-                <button onclick="lancerCalcul()" class="w-full mt-8 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-lg shadow-lg uppercase transition-all active:scale-95 tracking-widest">
-                    Calculer l'optimisation
-                </button>
+                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded uppercase text-xs tracking-widest">Calculer</button>
             </div>
         </div>
     </div>
 
     <script>
         const specs = {
+            annel: { 
+                1030: {de: 1200, di: 1030}, 600: {de: 700, di: 600}, 
+                500: {de: 580, di: 500}, 400: {de: 465, di: 400}, 300: {de: 350, di: 300} 
+            },
             cr8: { 400:11.7, 315:9.2, 250:7.3, 200:5.9, 160:4.7, 125:3.7 },
             evac: { 200:3.9, 160:3.2, 125:3.2, 100:3.0, 80:3.0, 75:3.0, 50:3.0, 40:3.0, 32:3.0 }
         };
 
-        const container = { w: 2340, h: 2680, coeff: 1.15 };
+        const container = { w: 2340, h: 2680, coeff: 1.10 }; // Coeff réduit car terrain optimisé
 
         function init() {
-            // Init CR8 (Toutes à 0)
-            const cr8Box = document.getElementById('cr8-inputs');
-            cr8Box.innerHTML = ''; 
-            Object.keys(specs.cr8).forEach(dn => {
-                cr8Box.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-50 p-2 border rounded shadow-sm">
-                        <span class="text-xs font-bold text-slate-600 uppercase">DN ${dn}</span>
-                        <input type="number" id="q-cr8-${dn}" value="0" oninput="lancerCalcul()" class="w-20 p-1 border rounded text-right outline-none focus:border-blue-500">
-                    </div>`;
-            });
+            const render = (id, data, prefix) => {
+                const box = document.getElementById(id);
+                box.innerHTML = '';
+                Object.keys(data).forEach(dn => {
+                    const isMax = (prefix === 'evac' && (dn == 100 || dn == 32));
+                    box.innerHTML += `
+                        <div class="flex justify-between items-center bg-white p-1.5 border rounded shadow-sm text-[11px]">
+                            <div class="flex items-center">
+                                ${prefix==='evac'?`<input type="checkbox" id="check-${dn}" ${isMax?'checked':''} onchange="toggleMode('${dn}')" class="mr-1 shadow-none">`:''}
+                                <span class="font-bold">DN ${dn}</span>
+                            </div>
+                            <div id="wrap-${prefix}-${dn}">
+                                <input type="number" id="q-${prefix}-${dn}" value="0" oninput="lancerCalcul()" class="w-14 border rounded text-right outline-none">
+                            </div>
+                        </div>`;
+                });
+            };
+            render('annel-inputs', specs.annel, 'annel');
+            render('cr8-inputs', specs.cr8, 'cr8');
+            render('evac-inputs', specs.evac, 'evac');
+            initValues();
+        }
 
-            // Init EVAC (Toutes à 0)
-            const evacBox = document.getElementById('evac-inputs');
-            evacBox.innerHTML = '';
-            Object.keys(specs.evac).forEach(dn => {
-                const isMaxDefault = (dn == 100 || dn == 32);
-                evacBox.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-50 p-2 border rounded shadow-sm transition-all" id="box-evac-${dn}">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="check-${dn}" ${isMaxDefault ? 'checked' : ''} onchange="toggleMode('${dn}')" class="mr-2 h-4 w-4 accent-blue-600">
-                            <span class="text-xs font-bold text-slate-600 uppercase">DN ${dn}</span>
-                        </div>
-                        <div id="wrap-${dn}">
-                            <input type="number" id="q-evac-${dn}" value="0" oninput="lancerCalcul()" class="w-16 p-1 border rounded text-right text-xs outline-none focus:border-green-500">
-                        </div>
-                        <span id="lbl-${dn}" class="hidden text-[9px] font-black text-blue-600 bg-blue-100 px-2 py-1 rounded">MAX</span>
-                    </div>`;
-            });
-
-            Object.keys(specs.evac).forEach(dn => toggleMode(dn));
+        function initValues() {
+            // Vos données réelles pour test
+            document.getElementById('q-evac-200').value = 20;
+            document.getElementById('q-evac-160').value = 100;
+            document.getElementById('q-evac-125').value = 200;
+            document.getElementById('q-evac-80').value = 450;
+            document.getElementById('q-evac-50').value = 200;
+            document.getElementById('q-evac-40').value = 900;
+            // DN 100 et 32 sont en MAX
+            toggleMode(100); toggleMode(32);
             lancerCalcul();
         }
 
         function toggleMode(dn) {
             const check = document.getElementById(`check-${dn}`).checked;
-            document.getElementById(`wrap-${dn}`).style.display = check ? 'none' : 'block';
-            document.getElementById(`lbl-${dn}`).style.display = check ? 'block' : 'none';
-            document.getElementById(`box-evac-${dn}`).classList.toggle('bg-blue-50', check);
-            document.getElementById(`box-evac-${dn}`).classList.toggle('border-blue-200', check);
+            document.getElementById(`wrap-evac-${dn}`).style.display = check ? 'none' : 'block';
             lancerCalcul();
         }
 
         function resetAll() {
-            // Remet les inputs à zéro
-            const inputs = document.querySelectorAll('input[type="number"]');
-            inputs.forEach(input => input.value = 0);
-            
-            // Décoche tout sauf 100 et 32 (ou décoche tout si vous préférez)
-            Object.keys(specs.evac).forEach(dn => {
-                document.getElementById(`check-${dn}`).checked = (dn == 100 || dn == 32);
-                toggleMode(dn);
-            });
+            document.querySelectorAll('input[type="number"]').forEach(i => i.value = 0);
             lancerCalcul();
         }
 
         function lancerCalcul() {
             let surfOcc = 0;
-            let di_list = []; 
-            let optimizationDns = [];
+            let dis_dispo = []; 
 
-            Object.keys(specs.cr8).forEach(dn => {
-                const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
-                surfOcc += Math.ceil(q / 4) * Math.pow(dn * container.coeff, 2);
-                const di = dn - (2 * specs.cr8[dn]);
-                for(let i=0; i<q; i++) di_list.push({di, len: 3});
+            // 1. ANNELÉS (5.8m -> 2 piles)
+            Object.keys(specs.annel).forEach(dn => {
+                const q = parseInt(document.getElementById(`q-annel-${dn}`).value) || 0;
+                surfOcc += Math.ceil(q / 2) * Math.pow(specs.annel[dn].de * container.coeff, 2);
+                for(let i=0; i<q; i++) dis_dispo.push({di: specs.annel[dn].di, len: 5.8});
             });
 
+            // 2. CR8 (3m -> 4 piles)
+            Object.keys(specs.cr8).forEach(dn => {
+                const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
+                // Si on peut le mettre dans un annelé, on ne l'ajoute pas à la surface frontale
+                let q_exterieur = q;
+                dis_dispo.forEach(vol => {
+                    if(vol.di > dn * 1.1 && q_exterieur > 0) {
+                        q_exterieur -= 1; // Un CR8 dans un annelé
+                    }
+                });
+                surfOcc += Math.ceil(q_exterieur / 4) * Math.pow(dn * container.coeff, 2);
+                const di = dn - (2 * specs.cr8[dn]);
+                for(let i=0; i<q; i++) dis_dispo.push({di: di, len: 3});
+            });
+
+            // 3. EVAC Fixes (4m -> 3 piles)
+            let optimizationDns = [];
             Object.keys(specs.evac).forEach(dn => {
-                const isMax = document.getElementById(`check-${dn}`).checked;
+                const isMax = document.getElementById(`check-${dn}`)?.checked;
                 if (!isMax) {
                     const q = parseInt(document.getElementById(`q-evac-${dn}`).value) || 0;
-                    surfOcc += Math.ceil(q / 3) * Math.pow(dn * container.coeff, 2);
+                    let q_exterieur = q;
+                    dis_dispo.forEach(vol => {
+                        if(vol.di > dn * 1.1 && q_exterieur > 0) { q_exterieur -= 1; }
+                    });
+                    surfOcc += Math.ceil(q_exterieur / 3) * Math.pow(dn * container.coeff, 2);
                     const di = dn - (2 * specs.evac[dn]);
-                    for(let i=0; i<q; i++) di_list.push({di, len: 4});
+                    for(let i=0; i<q; i++) dis_dispo.push({di: di, len: 4});
                 } else {
                     optimizationDns.push(parseInt(dn));
                 }
             });
 
-            optimizationDns.sort((a, b) => b - a);
-
+            // LOGIQUE DE REMPLISSAGE OPTIMISÉ (Réalité terrain)
             const surfTotal = container.w * container.h;
-            const occ = (surfOcc / surfTotal) * 100;
             const resContainer = document.getElementById('results-container');
             resContainer.innerHTML = '';
 
-            optimizationDns.forEach(targetDn => {
-                let insideCount = 0;
-                di_list.forEach(item => {
-                    let n = Math.floor(Math.pow(item.di / (targetDn * 1.08), 2) * 0.82);
-                    if(n < 1 && item.di >= (targetDn + 5)) n = 1;
-                    insideCount += (n * (item.len / 4)); 
+            optimizationDns.sort((a,b) => b-a).forEach(targetDn => {
+                let count = 0;
+                // On remplit les volumes intérieurs en priorité
+                dis_dispo.forEach(vol => {
+                    let n = Math.floor(Math.pow(vol.di / (targetDn * 1.05), 2) * 0.90);
+                    if(n < 1 && vol.di >= targetDn) n = 1;
+                    count += (n * (vol.len / 4));
                 });
-
-                let extraCount = 0;
-                if (targetDn === optimizationDns[0]) {
-                    extraCount = Math.floor(Math.max(0, surfTotal - surfOcc) / Math.pow(targetDn * 1.15, 2)) * 3;
-                    surfOcc = surfTotal; 
-                }
-
+                // Puis le vide restant dans le container
+                let resteSurf = Math.max(0, surfTotal - surfOcc);
+                count += Math.floor(resteSurf / Math.pow(targetDn * 1.1, 2)) * 3;
+                
                 resContainer.innerHTML += `
-                    <div class="bg-blue-600/30 border border-blue-500/50 p-4 rounded-lg shadow-md">
-                        <p class="text-[9px] uppercase font-bold text-blue-300 tracking-widest">DN ${targetDn} Optimisé</p>
-                        <p class="text-4xl font-black">${Math.floor(insideCount + extraCount)}</p>
-                        <p class="text-[9px] opacity-60 mt-1 italic italic">Nombre max tubes de 4m</p>
+                    <div class="bg-blue-600 p-3 rounded border border-blue-400">
+                        <p class="text-[9px] font-bold opacity-80 uppercase leading-none">DN ${targetDn} MAX</p>
+                        <p class="text-2xl font-black">${Math.floor(count)}</p>
                     </div>`;
+                if(targetDn == optimizationDns[0]) surfOcc = surfTotal; 
             });
 
-            document.getElementById('occ-text').innerText = occ.toFixed(1) + "%";
-            const g = document.getElementById('gauge-fill');
-            g.style.width = Math.min(occ, 100) + "%";
-            g.style.backgroundColor = occ > 100 ? '#ef4444' : (occ > 90 ? '#f97316' : '#3b82f6');
+            const occ = (surfOcc / surfTotal) * 100;
+            document.getElementById('occ-text').innerText = Math.min(occ, 100).toFixed(1) + "%";
+            document.getElementById('gauge-fill').style.width = Math.min(occ, 100) + "%";
         }
 
         window.onload = init;
