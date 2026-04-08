@@ -3,55 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optimiseur PVC Expert - 40' HC</title>
+    <title>PVC Optimizer v3.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 min-h-screen p-2 md:p-6 font-sans text-slate-900">
-    <div class="max-w-6xl mx-auto">
-        <header class="bg-slate-900 text-white p-6 rounded-t-2xl shadow-xl border-b-4 border-blue-500">
-            <h1 class="text-2xl font-bold tracking-tight">OPTIMISEUR LOGISTIQUE PVC <span class="text-blue-400 text-sm ml-2 font-mono">v3.0</span></h1>
-            <p class="text-slate-400 text-xs mt-1 italic text-right italic font-light">Config : 40' High Cube | Tulipes alignées</p>
-        </header>
+<body class="bg-slate-200 min-h-screen p-4">
+    <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden">
+        
+        <div class="bg-slate-800 text-white p-6">
+            <h1 class="text-2xl font-bold">OPTIMISEUR LOGISTIQUE PVC <span class="text-blue-400">v3.1</span></h1>
+            <p class="text-xs opacity-75 italic text-right font-light">Config : 40' High Cube | Tulipes alignées</p>
+        </div>
 
-        <div class="bg-white p-6 shadow-2xl rounded-b-2xl grid lg:grid-cols-3 gap-8">
-            <div class="space-y-4">
-                <h2 class="font-bold text-blue-800 border-b-2 border-blue-100 pb-2 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    CR8 ASSAINISSEMENT (3m)
-                </h2>
-                <div id="cr8-inputs" class="space-y-2 text-sm"></div>
+        <div class="p-6 grid lg:grid-cols-3 gap-8">
+            <div>
+                <h2 class="font-bold text-blue-800 border-b-2 border-blue-100 pb-2 mb-4">CR8 ASSAINISSEMENT (3m)</h2>
+                <div id="cr8-inputs" class="space-y-2"></div>
             </div>
 
-            <div class="space-y-4">
-                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-2 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    ÉVACUATIONS M1 (4m)
-                </h2>
-                <div class="text-[10px] text-slate-500 mb-2 italic bg-slate-50 p-2 rounded leading-tight">
-                    Cochez la case <span class="text-blue-600 font-bold">MAX</span> pour que le programme calcule automatiquement le remplissage pour ce diamètre.
-                </div>
-                <div id="evac-inputs" class="space-y-2 text-sm"></div>
+            <div>
+                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-2 mb-4">ÉVACUATIONS M1 (4m)</h2>
+                <p class="text-[10px] text-slate-500 mb-4 bg-slate-50 p-2 rounded">Cochez "MAX" pour optimiser ce diamètre.</p>
+                <div id="evac-inputs" class="space-y-2"></div>
             </div>
 
-            <div class="bg-slate-900 text-white p-6 rounded-2xl space-y-6 shadow-inner self-start sticky top-6">
-                <h2 class="text-lg font-bold text-blue-400 border-b border-slate-700 pb-2 text-center uppercase tracking-widest">Rapport de Charge</h2>
+            <div class="bg-slate-900 rounded-xl p-6 text-white h-fit sticky top-4">
+                <h2 class="text-center font-bold text-blue-400 mb-6 uppercase tracking-wider">Rapport de Charge</h2>
                 
-                <div class="space-y-5">
-                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                        <div class="flex justify-between text-xs text-slate-400 uppercase mb-1">
-                            <span>Occupation Surface Frontale</span>
-                            <span id="occ-text" class="font-bold text-white text-lg">0%</span>
-                        </div>
-                        <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
-                            <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
-                        </div>
+                <div class="mb-8">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span>Occupation Surface</span>
+                        <span id="occ-text" class="font-bold">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
+                        <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="results-container" class="space-y-4">
                     </div>
 
-                    <div id="results-container" class="space-y-3">
-                        </div>
-                </div>
-
-                <button onclick="lancerCalcul()" class="w-full bg-blue-500 hover:bg-blue-400 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 uppercase tracking-widest mt-4 flex items-center justify-center">
+                <button onclick="lancerCalcul()" class="w-full mt-8 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-lg shadow-lg uppercase transition-all active:scale-95">
                     Lancer l'optimisation
                 </button>
             </div>
@@ -61,24 +52,27 @@
     <script>
         const specs = {
             cr8: { 400:11.7, 315:9.2, 250:7.3, 200:5.9, 160:4.7, 125:3.7 },
-            evac: { 200:3.9, 160:3.2, 125:3.2, 110:3.2, 100:3.0, 80:3.0, 75:3.0, 50:3.0, 40:3.0, 32:3.0 }
+            evac: { 200:3.9, 160:3.2, 125:3.2, 100:3.0, 80:3.0, 75:3.0, 50:3.0, 40:3.0, 32:3.0 }
         };
 
         const container = { w: 2340, h: 2680, coeff: 1.15 };
 
         function init() {
-            // Init CR8
+            // Rendu CR8
             const cr8Box = document.getElementById('cr8-inputs');
+            cr8Box.innerHTML = ''; 
             Object.keys(specs.cr8).forEach(dn => {
                 let val = (dn==200?400:(dn==315?100:(dn==160?50:(dn==250?50:(dn==400?10:0)))));
-                cr8Box.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-200 shadow-sm">
-                    <span class="font-bold text-slate-700">DN ${dn}</span>
-                    <input type="number" id="q-cr8-${dn}" value="${val}" oninput="lancerCalcul()" class="w-20 p-1 border rounded text-right focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>`;
+                cr8Box.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-50 p-2 border rounded shadow-sm">
+                        <span class="text-sm font-bold">DN ${dn}</span>
+                        <input type="number" id="q-cr8-${dn}" value="${val}" class="w-20 p-1 border rounded text-right outline-none">
+                    </div>`;
             });
 
-            // Init EVAC
+            // Rendu EVAC
             const evacBox = document.getElementById('evac-inputs');
+            evacBox.innerHTML = '';
             Object.keys(specs.evac).forEach(dn => {
                 let defaultVal = 0;
                 if(dn == 200) defaultVal = 100;
@@ -87,45 +81,28 @@
                 if(dn == 50) defaultVal = 500;
                 if(dn == 40) defaultVal = 500;
                 
-                const isChecked = (dn == 100 || dn == 32) ? 'checked' : '';
-                
+                const isMax = (dn == 100 || dn == 32);
                 evacBox.innerHTML += `
-                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-200 shadow-sm transition-all overflow-hidden" id="box-evac-${dn}">
-                    <div class="flex items-center">
-                        <input type="checkbox" id="check-${dn}" ${isChecked} onchange="toggleMode('${dn}')" class="w-4 h-4 mr-2 accent-blue-600">
-                        <span class="font-bold text-slate-700">DN ${dn}</span>
-                    </div>
-                    <div id="input-wrap-${dn}">
-                         <input type="number" id="q-evac-${dn}" value="${defaultVal}" oninput="lancerCalcul()" class="w-20 p-1 border rounded text-right focus:ring-2 focus:ring-green-500 outline-none">
-                    </div>
-                    <div id="max-label-${dn}" class="hidden">
-                        <span class="text-[10px] font-black text-blue-600 bg-blue-100 px-2 py-1 rounded">MAXIMUM</span>
-                    </div>
-                </div>`;
+                    <div class="flex justify-between items-center bg-slate-50 p-2 border rounded shadow-sm">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="check-${dn}" ${isMax ? 'checked' : ''} onchange="toggleMode('${dn}')" class="mr-2 h-4 w-4">
+                            <span class="text-sm font-bold">DN ${dn}</span>
+                        </div>
+                        <div id="wrap-${dn}">
+                            <input type="number" id="q-evac-${dn}" value="${defaultVal}" class="w-16 p-1 border rounded text-right text-sm">
+                        </div>
+                        <span id="lbl-${dn}" class="hidden text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">MAX</span>
+                    </div>`;
             });
-            
+
             Object.keys(specs.evac).forEach(dn => toggleMode(dn));
             lancerCalcul();
         }
 
         function toggleMode(dn) {
-            const isMax = document.getElementById(`check-${dn}`).checked;
-            const inputWrap = document.getElementById(`input-wrap-${dn}`);
-            const maxLabel = document.getElementById(`max-label-${dn}`);
-            const box = document.getElementById(`box-evac-${dn}`);
-
-            if (isMax) {
-                inputWrap.classList.add('hidden');
-                maxLabel.classList.remove('hidden');
-                box.classList.replace('bg-slate-50', 'bg-blue-50');
-                box.classList.add('border-blue-300');
-            } else {
-                inputWrap.classList.remove('hidden');
-                maxLabel.classList.add('hidden');
-                box.classList.replace('bg-blue-50', 'bg-slate-50');
-                box.classList.remove('border-blue-300');
-            }
-            lancerCalcul();
+            const check = document.getElementById(`check-${dn}`).checked;
+            document.getElementById(`wrap-${dn}`).style.display = check ? 'none' : 'block';
+            document.getElementById(`lbl-${dn}`).style.display = check ? 'block' : 'none';
         }
 
         function lancerCalcul() {
@@ -133,7 +110,7 @@
             let di_list = []; 
             let optimizationDns = [];
 
-            // 1. Collecte des CR8
+            // CR8
             Object.keys(specs.cr8).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
                 surfOcc += Math.ceil(q / 4) * Math.pow(dn * container.coeff, 2);
@@ -141,7 +118,7 @@
                 for(let i=0; i<q; i++) di_list.push({di, len: 3});
             });
 
-            // 2. Collecte des EVAC fixes et identification des cibles d'optimisation
+            // EVAC
             Object.keys(specs.evac).forEach(dn => {
                 const isMax = document.getElementById(`check-${dn}`).checked;
                 if (!isMax) {
@@ -154,7 +131,6 @@
                 }
             });
 
-            // Tri des DN d'optimisation du plus grand au plus petit pour remplir intelligemment
             optimizationDns.sort((a, b) => b - a);
 
             const surfTotal = container.w * container.h;
@@ -162,41 +138,30 @@
             const resContainer = document.getElementById('results-container');
             resContainer.innerHTML = '';
 
-            // 3. Calcul pour chaque DN coché en "MAX"
             optimizationDns.forEach(targetDn => {
                 let insideCount = 0;
-                // Calcul du télescopage dans les tubes déjà chargés
                 di_list.forEach(item => {
-                    let n = Math.floor(Math.pow(item.di / (targetDn * 1.08), 2) * 0.82);
+                    let n = Math.floor(Math.pow(item.di / (targetDn * 1.08), 2) * 0.80);
                     if(n < 1 && item.di >= (targetDn + 5)) n = 1;
                     insideCount += (n * (item.len / 4)); 
                 });
 
-                // Calcul du remplissage dans les vides frontaux (uniquement pour le premier et plus gros DN optimisé)
                 let extraCount = 0;
                 if (targetDn === optimizationDns[0]) {
                     extraCount = Math.floor(Math.max(0, surfTotal - surfOcc) / Math.pow(targetDn * 1.15, 2)) * 3;
-                    // On simule que le premier DN "mange" la surface, le suivant ne prendra que le télescopage
                     surfOcc = surfTotal; 
                 }
 
-                const total = Math.floor(insideCount + extraCount);
-                
-                // Affichage du résultat
                 resContainer.innerHTML += `
-                    <div class="bg-blue-600/20 border border-blue-500/50 p-4 rounded-xl text-center shadow-lg">
-                        <p class="text-[10px] uppercase font-bold text-blue-300">DN ${targetDn} (Optimisé)</p>
-                        <p class="text-4xl font-black text-white">${total}</p>
-                        <p class="text-[10px] text-blue-200 mt-1 italic italic">quantité conseillée (4m)</p>
-                    </div>
-                `;
+                    <div class="bg-blue-600 p-4 rounded-lg shadow-md border border-blue-400">
+                        <p class="text-[10px] uppercase font-bold text-blue-100">DN ${targetDn} Optimisé</p>
+                        <p class="text-4xl font-black">${Math.floor(insideCount + extraCount)}</p>
+                    </div>`;
             });
 
-            // UI Progress Bar
             document.getElementById('occ-text').innerText = occ.toFixed(1) + "%";
-            const g = document.getElementById('gauge-fill');
-            g.style.width = Math.min(occ, 100) + "%";
-            g.className = occ > 100 ? "h-full bg-red-500 shadow-[0_0_10px_red]" : (occ > 90 ? "h-full bg-orange-500" : "h-full bg-blue-500");
+            document.getElementById('gauge-fill').style.width = Math.min(occ, 100) + "%";
+            document.getElementById('gauge-fill').style.backgroundColor = occ > 100 ? '#ef4444' : '#3b82f6';
         }
 
         window.onload = init;
