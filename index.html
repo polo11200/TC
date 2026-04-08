@@ -118,3 +118,88 @@
                 inputWrap.classList.add('hidden');
                 maxLabel.classList.remove('hidden');
                 box.classList.replace('bg-slate-50', 'bg-blue-50');
+                box.classList.add('border-blue-300');
+            } else {
+                inputWrap.classList.remove('hidden');
+                maxLabel.classList.add('hidden');
+                box.classList.replace('bg-blue-50', 'bg-slate-50');
+                box.classList.remove('border-blue-300');
+            }
+            lancerCalcul();
+        }
+
+        function lancerCalcul() {
+            let surfOcc = 0;
+            let di_list = []; 
+            let optimizationDns = [];
+
+            // 1. Collecte des CR8
+            Object.keys(specs.cr8).forEach(dn => {
+                const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
+                surfOcc += Math.ceil(q / 4) * Math.pow(dn * container.coeff, 2);
+                const di = dn - (2 * specs.cr8[dn]);
+                for(let i=0; i<q; i++) di_list.push({di, len: 3});
+            });
+
+            // 2. Collecte des EVAC fixes et identification des cibles d'optimisation
+            Object.keys(specs.evac).forEach(dn => {
+                const isMax = document.getElementById(`check-${dn}`).checked;
+                if (!isMax) {
+                    const q = parseInt(document.getElementById(`q-evac-${dn}`).value) || 0;
+                    surfOcc += Math.ceil(q / 3) * Math.pow(dn * container.coeff, 2);
+                    const di = dn - (2 * specs.evac[dn]);
+                    for(let i=0; i<q; i++) di_list.push({di, len: 4});
+                } else {
+                    optimizationDns.push(parseInt(dn));
+                }
+            });
+
+            // Tri des DN d'optimisation du plus grand au plus petit pour remplir intelligemment
+            optimizationDns.sort((a, b) => b - a);
+
+            const surfTotal = container.w * container.h;
+            const occ = (surfOcc / surfTotal) * 100;
+            const resContainer = document.getElementById('results-container');
+            resContainer.innerHTML = '';
+
+            // 3. Calcul pour chaque DN coché en "MAX"
+            optimizationDns.forEach(targetDn => {
+                let insideCount = 0;
+                // Calcul du télescopage dans les tubes déjà chargés
+                di_list.forEach(item => {
+                    let n = Math.floor(Math.pow(item.di / (targetDn * 1.08), 2) * 0.82);
+                    if(n < 1 && item.di >= (targetDn + 5)) n = 1;
+                    insideCount += (n * (item.len / 4)); 
+                });
+
+                // Calcul du remplissage dans les vides frontaux (uniquement pour le premier et plus gros DN optimisé)
+                let extraCount = 0;
+                if (targetDn === optimizationDns[0]) {
+                    extraCount = Math.floor(Math.max(0, surfTotal - surfOcc) / Math.pow(targetDn * 1.15, 2)) * 3;
+                    // On simule que le premier DN "mange" la surface, le suivant ne prendra que le télescopage
+                    surfOcc = surfTotal; 
+                }
+
+                const total = Math.floor(insideCount + extraCount);
+                
+                // Affichage du résultat
+                resContainer.innerHTML += `
+                    <div class="bg-blue-600/20 border border-blue-500/50 p-4 rounded-xl text-center shadow-lg">
+                        <p class="text-[10px] uppercase font-bold text-blue-300">DN ${targetDn} (Optimisé)</p>
+                        <p class="text-4xl font-black text-white">${total}</p>
+                        <p class="text-[10px] text-blue-200 mt-1 italic italic">quantité conseillée (4m)</p>
+                    </div>
+                `;
+            });
+
+            // UI Progress Bar
+            document.getElementById('occ-text').innerText = occ.toFixed(1) + "%";
+            const g = document.getElementById('gauge-fill');
+            g.style.width = Math.min(occ, 100) + "%";
+            g.className = occ > 100 ? "h-full bg-red-500 shadow-[0_0_10px_red]" : (occ > 90 ? "h-full bg-orange-500" : "h-full bg-blue-500");
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
