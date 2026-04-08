@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PVC Optimizer v5.1 - Final</title>
+    <title>PVC Optimizer v5.2 - Expert Final</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 min-h-screen p-2 md:p-4 font-sans text-slate-900">
+<body class="bg-slate-100 min-h-screen p-2 md:p-4 font-sans text-slate-900 text-[13px]">
     <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-slate-900">
         
         <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold italic">PVC OPTIMIZER <span class="text-blue-400 text-sm italic">v5.1 TERRAIN</span></h1>
+            <h1 class="text-xl font-bold italic tracking-tighter">PVC OPTIMIZER <span class="text-blue-400 text-sm">v5.2</span></h1>
             <button onclick="resetAll()" class="bg-red-600 hover:bg-red-700 text-[10px] font-bold py-2 px-4 rounded uppercase transition-all shadow-lg active:scale-95">Remettre à zéro</button>
         </div>
 
@@ -30,10 +30,10 @@
                 <div id="evac-inputs" class="space-y-1"></div>
             </div>
 
-            <div class="bg-slate-900 rounded-xl p-5 text-white h-fit sticky top-4 shadow-xl">
-                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-700 pb-2">Charge TC 40' HC</h2>
+            <div class="bg-slate-900 rounded-xl p-5 text-white h-fit sticky top-4 shadow-xl border border-slate-700">
+                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-800 pb-2">Charge TC 40' HC</h2>
                 
-                <div class="mb-6 bg-slate-800 p-4 rounded-lg text-center border border-slate-700">
+                <div class="mb-6 bg-slate-800 p-4 rounded-lg text-center">
                     <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Frontale</span>
                     <span id="occ-text" class="text-4xl font-black">0%</span>
                     <div class="w-full bg-slate-700 h-2 rounded-full mt-3 overflow-hidden">
@@ -41,9 +41,11 @@
                     </div>
                 </div>
 
-                <div id="results-container" class="space-y-3"></div>
+                <div id="results-container" class="space-y-3">
+                    <p class="text-[11px] text-slate-500 italic text-center leading-tight">Cochez "MAX" pour optimiser un diamètre.</p>
+                </div>
 
-                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded uppercase text-xs tracking-widest transition-all shadow-[0_4px_0_rgb(37,99,235)] active:translate-y-1 active:shadow-none">Calculer l'optimisation</button>
+                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded uppercase text-xs tracking-widest transition-all shadow-[0_4px_0_rgb(37,99,235)] active:translate-y-1 active:shadow-none">Actualiser le calcul</button>
             </div>
         </div>
     </div>
@@ -61,16 +63,15 @@
             const render = (id, data, prefix) => {
                 const box = document.getElementById(id);
                 box.innerHTML = '';
-                // Tri par DN croissant (plus petit au plus grand)
                 Object.keys(data).sort((a,b) => parseInt(a) - parseInt(b)).forEach(dn => {
                     box.innerHTML += `
-                        <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-[12px]">
+                        <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm">
                             <div class="flex items-center">
                                 ${prefix==='evac'?`<input type="checkbox" id="check-${dn}" onchange="toggleMode('${dn}')" class="mr-2 h-4 w-4 accent-blue-600">`:''}
                                 <span class="font-bold text-slate-700 uppercase">DN ${dn}</span>
                             </div>
                             <div id="wrap-${prefix}-${dn}">
-                                <input type="number" id="q-${prefix}-${dn}" placeholder="" oninput="lancerCalcul()" class="w-16 border-b border-slate-300 text-right outline-none focus:border-blue-500 bg-transparent">
+                                <input type="number" id="q-${prefix}-${dn}" placeholder="" oninput="lancerCalcul()" class="w-16 border-b border-slate-200 text-right outline-none focus:border-blue-500 bg-transparent py-1">
                             </div>
                             <span id="lbl-${dn}" class="hidden text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded">MAX</span>
                         </div>`;
@@ -103,12 +104,14 @@
             let di_list = []; 
             let optimizationDns = [];
 
+            // 1. Annelés
             Object.keys(specs.annel).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-annel-${dn}`).value) || 0;
-                surfOcc += Math.ceil(q / 2) * (Math.pow(specs.annel[dn], 2) * 0.907); // 0.907 = Facteur de compacité Nid d'abeille
-                for(let i=0; i<q; i++) di_list.push({di: specs.annel[dn]-30, len: 5.8});
+                surfOcc += Math.ceil(q / 2) * (Math.pow(specs.annel[dn], 2) * 0.907);
+                for(let i=0; i<q; i++) di_list.push({di: specs.annel[dn]-40, len: 5.8});
             });
 
+            // 2. CR8
             Object.keys(specs.cr8).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
                 surfOcc += Math.ceil(q / 4) * (Math.pow(dn, 2) * 0.907);
@@ -116,6 +119,7 @@
                 for(let i=0; i<q; i++) di_list.push({di: di, len: 3});
             });
 
+            // 3. EVAC
             Object.keys(specs.evac).forEach(dn => {
                 const isMax = document.getElementById(`check-${dn}`)?.checked;
                 if (!isMax) {
@@ -130,34 +134,37 @@
 
             const surfTotal = container.w * container.h;
             const resContainer = document.getElementById('results-container');
-            resContainer.innerHTML = '';
+            
+            if(optimizationDns.length > 0) {
+                resContainer.innerHTML = '';
+            } else {
+                resContainer.innerHTML = '<p class="text-[11px] text-slate-500 italic text-center leading-tight">Cochez "MAX" pour optimiser un diamètre.</p>';
+            }
 
-            // Tri des résultats par DN croissant pour l'affichage
             optimizationDns.sort((a,b) => a - b).forEach(targetDn => {
                 let count = 0;
-                // Télescopage ultra-agressif (imbrication tulipes incluse)
                 di_list.forEach(vol => {
-                    let n = Math.floor(Math.pow(vol.di / (targetDn * 0.98), 2) * 1.05); // Facteur > 1 car déformation possible des parois
+                    let n = Math.floor(Math.pow(vol.di / (targetDn * 0.98), 2) * 1.05); 
                     if(n < 1 && vol.di >= targetDn) n = 1;
                     count += (n * (vol.len / 4));
                 });
 
                 let resteSurf = Math.max(0, surfTotal - surfOcc);
-                // 4.2 piles au lieu de 3 car on comble chaque recoin du High Cube
-                count += Math.floor(resteSurf / (Math.pow(targetDn, 2) * 0.88)) * 4.2; 
+                count += Math.floor(resteSurf / (Math.pow(targetDn, 2) * 0.88)) * 4.1; // Ajustement léger à 4.1 piles
                 
                 resContainer.innerHTML += `
-                    <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white">
-                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1 tracking-tighter text-blue-100">MAX DN ${targetDn}</p>
+                    <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white transform transition-all">
+                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1 tracking-tighter text-blue-100 uppercase">MAX DN ${targetDn}</p>
                         <p class="text-3xl font-black">${Math.floor(count)}</p>
                     </div>`;
+                if(targetDn == optimizationDns[0]) surfOcc = surfTotal; 
             });
 
             const occ = (surfOcc / surfTotal) * 100;
             document.getElementById('occ-text').innerText = Math.min(occ, 100).toFixed(1) + "%";
             const g = document.getElementById('gauge-fill');
             g.style.width = Math.min(occ, 100) + "%";
-            g.style.backgroundColor = occ > 100 ? '#ef4444' : '#3b82f6';
+            g.style.backgroundColor = occ > 100 ? '#ef4444' : (occ > 95 ? '#f59e0b' : '#3b82f6');
         }
 
         window.onload = init;
