@@ -3,65 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optimiseur Commande PVC - Full TC 40'</title>
+    <title>Optimiseur PVC - Full TC 40' HC</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 font-sans text-slate-900">
+<body class="bg-slate-100 min-h-screen p-2 md:p-6 font-sans text-slate-900">
     <div class="max-w-6xl mx-auto">
-        <header class="bg-blue-900 text-white p-6 rounded-t-2xl shadow-lg">
-            <h1 class="text-2xl font-bold italic">Calculateur Logistique PVC Gemini</h1>
-            <p class="text-blue-200 text-sm">Optimisation Container 40' High Cube - Tulipes même sens</p>
+        <header class="bg-blue-900 text-white p-6 rounded-t-2xl shadow-xl">
+            <h1 class="text-2xl font-bold italic">Calculateur Logistique PVC Gemini v2</h1>
+            <p class="text-blue-200 text-sm font-light">Optimisation 40' High Cube (H: 2.70m) | Tulipes alignées</p>
         </header>
 
-        <div class="bg-white p-6 shadow-xl rounded-b-2xl grid lg:grid-cols-3 gap-8">
+        <div class="bg-white p-6 shadow-2xl rounded-b-2xl grid lg:grid-cols-3 gap-8">
             <div class="space-y-4">
-                <h2 class="font-bold text-blue-800 border-b pb-2 flex justify-between">
-                    <span>ASSAINISSEMENT CR8 (3m)</span>
-                </h2>
+                <h2 class="font-bold text-blue-800 border-b-2 border-blue-100 pb-2">ASSAINISSEMENT CR8 (3m)</h2>
                 <div id="cr8-inputs" class="space-y-2 text-sm"></div>
             </div>
 
             <div class="space-y-4">
-                <h2 class="font-bold text-green-800 border-b pb-2">ÉVACUATIONS M1 (4m)</h2>
+                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-2">ÉVACUATIONS M1 (4m)</h2>
                 <div id="evac-inputs" class="space-y-2 text-sm"></div>
-                <div class="bg-green-50 p-3 rounded-lg border border-green-200 mt-4">
-                    <p class="text-xs font-bold text-green-700 uppercase">Priorités "MAXIMUM"</p>
-                    <p class="text-[10px] text-green-600 mb-2 italic">Le programme remplira le vide avec ces diamètres :</p>
-                    <div class="flex gap-2">
-                        <span class="bg-white px-2 py-1 rounded border border-green-300 text-xs font-bold">DN 100</span>
-                        <span class="bg-white px-2 py-1 rounded border border-green-300 text-xs font-bold">DN 32</span>
-                    </div>
+                <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mt-4 text-[11px] text-amber-800 italic">
+                    Note : Les DN 100 et 32 sont calculés automatiquement pour boucher les trous (Télescopage + Interstices).
                 </div>
             </div>
 
-            <div class="bg-slate-900 text-white p-6 rounded-xl space-y-6 shadow-inner">
-                <h2 class="text-lg font-bold text-blue-400 border-b border-slate-700 pb-2 text-center uppercase tracking-widest">Rapport de Charge</h2>
+            <div class="bg-slate-900 text-white p-6 rounded-2xl space-y-6 shadow-inner self-start sticky top-6">
+                <h2 class="text-lg font-bold text-blue-400 border-b border-slate-700 pb-2 text-center uppercase tracking-widest">Verdict Chargement</h2>
                 
-                <div class="space-y-4">
-                    <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                        <p class="text-xs text-slate-400 uppercase">Saturation Volume</p>
-                        <div class="w-full bg-slate-700 h-4 rounded-full mt-2 overflow-hidden">
-                            <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-700" style="width: 0%"></div>
+                <div class="space-y-5">
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                        <div class="flex justify-between text-xs text-slate-400 uppercase mb-1">
+                            <span>Saturation Surface</span>
+                            <span id="occ-text" class="font-bold text-white">0%</span>
                         </div>
-                        <p id="occ-text" class="text-right text-xl font-black mt-1">0%</p>
+                        <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
+                            <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-3">
-                        <div class="bg-blue-600 p-4 rounded-lg text-center shadow-lg transform scale-105">
-                            <p class="text-[10px] uppercase font-bold opacity-80">DN 100 (Max ajouté)</p>
-                            <p id="res-100" class="text-4xl font-black">0</p>
-                            <p class="text-xs mt-1">tubes de 4m</p>
+                    <div class="space-y-3">
+                        <div class="bg-blue-600/20 border border-blue-500/50 p-4 rounded-xl text-center">
+                            <p class="text-[10px] uppercase font-bold text-blue-300">DN 100 (MAX possible)</p>
+                            <p id="res-100" class="text-5xl font-black text-white">0</p>
+                            <p class="text-xs text-blue-200 mt-1 italic">tubes de 4ml</p>
                         </div>
-                        <div class="bg-indigo-600 p-4 rounded-lg text-center shadow-lg">
-                            <p class="text-[10px] uppercase font-bold opacity-80">DN 32 (Max ajouté)</p>
-                            <p id="res-32" class="text-4xl font-black">0</p>
-                            <p class="text-xs mt-1">tubes de 4m</p>
+                        <div class="bg-indigo-600/20 border border-indigo-500/50 p-4 rounded-xl text-center">
+                            <p class="text-[10px] uppercase font-bold text-indigo-300">DN 32 (MAX possible)</p>
+                            <p id="res-32" class="text-5xl font-black text-white">0</p>
+                            <p class="text-xs text-indigo-200 mt-1 italic">tubes de 4ml</p>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="lancerCalcul()" class="w-full bg-white text-slate-900 font-black py-4 rounded-lg hover:bg-blue-400 transition-colors uppercase tracking-tighter">
-                    Lancer l'Optimisation
+                <button onclick="lancerCalcul()" class="w-full bg-blue-500 hover:bg-blue-400 text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 uppercase tracking-widest mt-4">
+                    RECALCULER L'OPTIMISATION
                 </button>
             </div>
         </div>
@@ -73,14 +68,16 @@
             evac: { 200:3.9, 160:3.2, 125:3.2, 100:3.0, 80:3.0, 75:3.0, 50:3.0, 40:3.0, 32:3.0 }
         };
 
-        const container = { w: 2340, h: 2380, depth: 12000, coeff: 1.15 };
+        // Dimensions High Cube : plus de hauteur (2.68m utiles)
+        const container = { w: 2340, h: 2680, coeff: 1.15 };
 
         function init() {
             const cr8Box = document.getElementById('cr8-inputs');
             Object.keys(specs.cr8).forEach(dn => {
-                cr8Box.innerHTML += `<div class="flex justify-between items-center bg-slate-100 p-2 rounded">
-                    <span>DN ${dn}</span>
-                    <input type="number" id="q-cr8-${dn}" value="${dn==200?400:(dn==315?100:(dn==160?50:(dn==250?50:(dn==400?10:0))))}" class="w-16 p-1 border rounded text-right">
+                let val = (dn==200?400:(dn==315?100:(dn==160?50:(dn==250?50:(dn==400?10:0)))));
+                cr8Box.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-200">
+                    <span class="font-medium">DN ${dn}</span>
+                    <input type="number" id="q-cr8-${dn}" value="${val}" class="w-20 p-1 border rounded text-right focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>`;
             });
 
@@ -93,73 +90,67 @@
                 if(dn == 80) defaultVal = 100;
                 if(dn == 50) defaultVal = 500;
                 if(dn == 40) defaultVal = 500;
-
-                const isMax = (dn == 100 || dn == 32);
-                evacBox.innerHTML += `<div class="flex justify-between items-center ${isMax ? 'bg-green-100' : 'bg-slate-50'} p-2 rounded border-l-4 ${isMax ? 'border-green-500' : 'border-slate-300'}">
-                    <span class="font-semibold">DN ${dn}</span>
-                    ${isMax ? '<span class="text-green-600 font-bold text-[10px]">OPTIMISÉ</span>' : `<input type="number" id="q-evac-${dn}" value="${defaultVal}" class="w-16 p-1 border rounded text-right">`}
+                
+                evacBox.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-200">
+                    <span class="font-medium">DN ${dn}</span>
+                    <input type="number" id="q-evac-${dn}" value="${defaultVal}" class="w-20 p-1 border rounded text-right focus:ring-2 focus:ring-green-500 outline-none">
                 </div>`;
             });
+            lancerCalcul();
         }
 
         function lancerCalcul() {
-            let surfaceFrontaleOccupee = 0;
-            let di_disponibles = []; // Liste des diamètres intérieurs pour télescopage
+            let surfOcc = 0;
+            let di_list = []; 
 
-            // 1. Calcul CR8 (3m -> 4 piles dans la longueur)
+            // 1. CR8
             Object.keys(specs.cr8).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
-                const qFront = Math.ceil(q / 4);
-                surfaceFrontaleOccupee += qFront * Math.pow(dn * container.coeff, 2);
-                
+                surfOcc += Math.ceil(q / 4) * Math.pow(dn * container.coeff, 2);
                 const di = dn - (2 * specs.cr8[dn]);
-                for(let i=0; i < q; i++) di_disponibles.push({di, len: 3});
+                for(let i=0; i<q; i++) di_list.push({di, len: 3});
             });
 
-            // 2. Calcul EVAC Fixes (4m -> 3 piles dans la longueur)
+            // 2. EVAC (sauf 100 et 32 qui sont les variables d'ajustement)
             Object.keys(specs.evac).forEach(dn => {
-                if(dn != 100 && dn != 32) {
-                    const q = parseInt(document.getElementById(`q-evac-${dn}`).value) || 0;
-                    const qFront = Math.ceil(q / 3);
-                    surfaceFrontaleOccupee += qFront * Math.pow(dn * container.coeff, 2);
-                    
+                const q = parseInt(document.getElementById(`q-evac-${dn}`).value) || 0;
+                if(dn != "100" && dn != "32") {
+                    surfOcc += Math.ceil(q / 3) * Math.pow(dn * container.coeff, 2);
                     const di = dn - (2 * specs.evac[dn]);
-                    for(let i=0; i < q; i++) di_disponibles.push({di, len: 4});
+                    for(let i=0; i<q; i++) di_list.push({di, len: 4});
                 }
             });
 
-            const surfaceTotale = container.w * container.h;
-            let occBase = (surfaceFrontaleOccupee / surfaceTotale) * 100;
+            const surfTotal = container.w * container.h;
+            const occ = (surfOcc / surfTotal) * 100;
 
-            // 3. Calcul de l'optimisation MAXIMUM (DN 100 et DN 32)
-            // Estimation du DN 100 possible dans les DI existants
-            let totalDN100 = 0;
-            di_disponibles.forEach(item => {
-                let possible = Math.floor(Math.pow(item.di / 108, 2) * 0.85); // 108mm avec tulipe
-                if (possible < 1 && item.di >= 105) possible = 1;
-                totalDN100 += (possible * (item.len / 4)); // prorata longueur
+            // 3. Calcul du MAXIMUM de DN 100 (Priorité 1)
+            // A. Dans les tubes
+            let inside100 = 0;
+            di_list.forEach(item => {
+                let n = Math.floor(Math.pow(item.di / 110, 2) * 0.82);
+                if(n < 1 && item.di >= 105) n = 1;
+                inside100 += (n * (item.len / 4)); 
             });
+            // B. Dans le vide restant du container
+            let extra100 = Math.floor(Math.max(0, surfTotal - surfOcc) / Math.pow(110 * 1.1, 2)) * 3;
+            let total100 = Math.floor(inside100 + extra100);
 
-            // Interstices frontaux pour DN 100
-            const videFrontal = surfaceTotale - surfaceFrontaleOccupee;
-            const extraDN100 = Math.floor(videFrontal / Math.pow(110, 2)) * 3; // 3 piles de 4m
+            // 4. Calcul du MAXIMUM de DN 32 (Finitioin)
+            // On peut en mettre énormément dans les interstices (environ 4 par tube de 100)
+            let total32 = Math.floor(total100 * 3.5);
+
+            // UI
+            document.getElementById('occ-text').innerText = occ.toFixed(1) + "%";
+            const g = document.getElementById('gauge-fill');
+            g.style.width = Math.min(occ, 100) + "%";
+            g.className = occ > 100 ? "h-full bg-red-500" : (occ > 90 ? "h-full bg-orange-500" : "h-full bg-blue-500");
             
-            totalDN100 = Math.max(0, Math.floor(totalDN100 + extraDN100));
-
-            // DN 32 : on le glisse partout où il reste de la place (très petit)
-            // On estime que chaque tube (CR8 ou EVAC) peut en contenir au moins 2 à 5 de plus
-            let totalDN32 = Math.floor(totalDN100 * 2.5); 
-
-            // Update UI
-            document.getElementById('occ-text').innerText = Math.min(occBase, 100).toFixed(1) + "%";
-            document.getElementById('gauge-fill').style.width = Math.min(occBase, 100) + "%";
-            document.getElementById('gauge-fill').className = occBase > 100 ? "h-full bg-red-600" : "h-full bg-blue-500";
-            
-            document.getElementById('res-100').innerText = occBase > 100 ? "N/A" : totalDN100;
-            document.getElementById('res-32').innerText = occBase > 100 ? "N/A" : totalDN32;
+            document.getElementById('res-100').innerText = total100;
+            document.getElementById('res-32').innerText = total32;
         }
 
-        init();
+        window.onload = init;
     </script>
 </body>
 </html>
