@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PVC Optimizer v5.2 - Expert Final</title>
+    <title>PVC Optimizer v5.3 - Logique Universelle</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen p-2 md:p-4 font-sans text-slate-900 text-[13px]">
     <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-slate-900">
         
         <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold italic tracking-tighter">PVC OPTIMIZER <span class="text-blue-400 text-sm">v5.2</span></h1>
-            <button onclick="resetAll()" class="bg-red-600 hover:bg-red-700 text-[10px] font-bold py-2 px-4 rounded uppercase transition-all shadow-lg active:scale-95">Remettre à zéro</button>
+            <h1 class="text-xl font-bold italic tracking-tighter text-blue-400">OPTIMISEUR TERRAIN <span class="text-white text-sm opacity-50">v5.3</span></h1>
+            <button onclick="resetAll()" class="bg-red-600 hover:bg-red-700 text-[10px] font-bold py-2 px-4 rounded uppercase transition-all active:scale-95">Remettre à zéro</button>
         </div>
 
         <div class="p-4 grid lg:grid-cols-4 gap-6">
@@ -26,12 +26,12 @@
             </div>
 
             <div class="space-y-3">
-                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-1 text-xs uppercase">Évacuation M1 (4m)</h2>
+                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-1 text-xs uppercase">Évacuation (4m)</h2>
                 <div id="evac-inputs" class="space-y-1"></div>
             </div>
 
             <div class="bg-slate-900 rounded-xl p-5 text-white h-fit sticky top-4 shadow-xl border border-slate-700">
-                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-800 pb-2">Charge TC 40' HC</h2>
+                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-800 pb-2">Capacité de Charge</h2>
                 
                 <div class="mb-6 bg-slate-800 p-4 rounded-lg text-center">
                     <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Frontale</span>
@@ -41,11 +41,11 @@
                     </div>
                 </div>
 
-                <div id="results-container" class="space-y-3">
-                    <p class="text-[11px] text-slate-500 italic text-center leading-tight">Cochez "MAX" pour optimiser un diamètre.</p>
+                <div id="results-container" class="space-y-3 text-center">
+                    <p class="text-slate-500 italic">Cochez "MAX" pour optimiser.</p>
                 </div>
 
-                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded uppercase text-xs tracking-widest transition-all shadow-[0_4px_0_rgb(37,99,235)] active:translate-y-1 active:shadow-none">Actualiser le calcul</button>
+                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded uppercase text-xs tracking-widest transition-all shadow-[0_4px_0_rgb(37,99,235)] active:translate-y-1 active:shadow-none">Calculer l'optimisation</button>
             </div>
         </div>
     </div>
@@ -57,7 +57,7 @@
             evac: { 32:3.0, 40:3.0, 50:3.0, 75:3.0, 80:3.0, 100:3.0, 125:3.2, 160:3.2, 200:3.9 }
         };
 
-        const container = { w: 2340, h: 2680, coeff: 1.01 }; 
+        const container = { w: 2340, h: 2680 }; 
 
         function init() {
             const render = (id, data, prefix) => {
@@ -101,32 +101,32 @@
 
         function lancerCalcul() {
             let surfOcc = 0;
-            let di_list = []; 
+            let di_vols = []; 
             let optimizationDns = [];
 
-            // 1. Annelés
+            // 1. Collecte ANNELÉS (2 piles de 5.8m)
             Object.keys(specs.annel).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-annel-${dn}`).value) || 0;
                 surfOcc += Math.ceil(q / 2) * (Math.pow(specs.annel[dn], 2) * 0.907);
-                for(let i=0; i<q; i++) di_list.push({di: specs.annel[dn]-40, len: 5.8});
+                for(let i=0; i<q; i++) di_vols.push({di: specs.annel[dn] - 40, len: 5.8});
             });
 
-            // 2. CR8
+            // 2. Collecte CR8 (4 piles de 3m)
             Object.keys(specs.cr8).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
                 surfOcc += Math.ceil(q / 4) * (Math.pow(dn, 2) * 0.907);
                 const di = dn - (2 * specs.cr8[dn]);
-                for(let i=0; i<q; i++) di_list.push({di: di, len: 3});
+                for(let i=0; i<q; i++) di_vols.push({di: di, len: 3});
             });
 
-            // 3. EVAC
+            // 3. Collecte EVAC (3 piles de 4m)
             Object.keys(specs.evac).forEach(dn => {
                 const isMax = document.getElementById(`check-${dn}`)?.checked;
                 if (!isMax) {
                     const q = parseInt(document.getElementById(`q-evac-${dn}`).value) || 0;
                     surfOcc += Math.ceil(q / 3) * (Math.pow(dn, 2) * 0.907);
                     const di = dn - (2 * specs.evac[dn]);
-                    for(let i=0; i<q; i++) di_list.push({di: di, len: 4});
+                    for(let i=0; i<q; i++) di_vols.push({di: di, len: 4});
                 } else {
                     optimizationDns.push(parseInt(dn));
                 }
@@ -134,29 +134,30 @@
 
             const surfTotal = container.w * container.h;
             const resContainer = document.getElementById('results-container');
-            
-            if(optimizationDns.length > 0) {
-                resContainer.innerHTML = '';
-            } else {
-                resContainer.innerHTML = '<p class="text-[11px] text-slate-500 italic text-center leading-tight">Cochez "MAX" pour optimiser un diamètre.</p>';
-            }
+            resContainer.innerHTML = '';
 
+            // Optimisation par télescopage universel
             optimizationDns.sort((a,b) => a - b).forEach(targetDn => {
                 let count = 0;
-                di_list.forEach(vol => {
-                    let n = Math.floor(Math.pow(vol.di / (targetDn * 0.98), 2) * 1.05); 
+                // On remplit TOUS les volumes intérieurs collectés plus haut
+                di_vols.forEach(vol => {
+                    // Facteur terrain : les tubes s'écrasent un peu, on gagne 5% sur le DI
+                    let n = Math.floor(Math.pow((vol.di * 1.02) / (targetDn * 0.98), 2) * 1.05); 
                     if(n < 1 && vol.di >= targetDn) n = 1;
                     count += (n * (vol.len / 4));
                 });
 
+                // On remplit le vide frontal restant dans le container
                 let resteSurf = Math.max(0, surfTotal - surfOcc);
-                count += Math.floor(resteSurf / (Math.pow(targetDn, 2) * 0.88)) * 4.1; // Ajustement léger à 4.1 piles
+                count += Math.floor(resteSurf / (Math.pow(targetDn, 2) * 0.88)) * 4.1; 
                 
                 resContainer.innerHTML += `
-                    <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white transform transition-all">
-                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1 tracking-tighter text-blue-100 uppercase">MAX DN ${targetDn}</p>
+                    <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white mb-2">
+                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1 tracking-tighter text-blue-100">MAX DN ${targetDn}</p>
                         <p class="text-3xl font-black">${Math.floor(count)}</p>
                     </div>`;
+                
+                // Si on a optimisé un diamètre, on considère la surface frontale comme saturée pour le suivant
                 if(targetDn == optimizationDns[0]) surfOcc = surfTotal; 
             });
 
