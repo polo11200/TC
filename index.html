@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PVC Optimizer v5.0 - Expert Terrain</title>
+    <title>PVC Optimizer v5.1 - Final</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen p-2 md:p-4 font-sans text-slate-900">
-    <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-blue-900">
+    <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-slate-900">
         
         <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold italic">PVC OPTIMIZER <span class="text-blue-400 text-sm">v5.0 ULTRA-NESTING</span></h1>
+            <h1 class="text-xl font-bold italic">PVC OPTIMIZER <span class="text-blue-400 text-sm italic">v5.1 TERRAIN</span></h1>
             <button onclick="resetAll()" class="bg-red-600 hover:bg-red-700 text-[10px] font-bold py-2 px-4 rounded uppercase transition-all shadow-lg active:scale-95">Remettre à zéro</button>
         </div>
 
@@ -31,45 +31,43 @@
             </div>
 
             <div class="bg-slate-900 rounded-xl p-5 text-white h-fit sticky top-4 shadow-xl">
-                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-700 pb-2 text-white/50 text-xs">Rapport de Charge</h2>
+                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-700 pb-2">Charge TC 40' HC</h2>
                 
                 <div class="mb-6 bg-slate-800 p-4 rounded-lg text-center border border-slate-700">
-                    <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Surface Frontale</span>
+                    <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Frontale</span>
                     <span id="occ-text" class="text-4xl font-black">0%</span>
                     <div class="w-full bg-slate-700 h-2 rounded-full mt-3 overflow-hidden">
                         <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-700" style="width: 0%"></div>
                     </div>
                 </div>
 
-                <div id="results-container" class="space-y-3">
-                    <p class="text-[10px] text-slate-500 italic text-center leading-tight">Cochez "MAX" pour optimiser un diamètre.</p>
-                </div>
+                <div id="results-container" class="space-y-3"></div>
 
-                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded uppercase text-xs tracking-widest transition-all shadow-[0_4px_0_rgb(37,99,235)] active:translate-y-1 active:shadow-none">Lancer le calcul</button>
+                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded uppercase text-xs tracking-widest transition-all shadow-[0_4px_0_rgb(37,99,235)] active:translate-y-1 active:shadow-none">Calculer l'optimisation</button>
             </div>
         </div>
     </div>
 
     <script>
         const specs = {
-            annel: { 1030:1200, 600:700, 500:580, 400:465, 300:350 },
-            cr8: { 400:11.7, 315:9.2, 250:7.3, 200:5.9, 160:4.7, 125:3.7 },
-            evac: { 200:3.9, 160:3.2, 125:3.2, 100:3.0, 80:3.0, 75:3.0, 50:3.0, 40:3.0, 32:3.0 }
+            annel: { 300:350, 400:465, 500:580, 600:700, 1030:1200 },
+            cr8: { 125:3.7, 160:4.7, 200:5.9, 250:7.3, 315:9.2, 400:11.7 },
+            evac: { 32:3.0, 40:3.0, 50:3.0, 75:3.0, 80:3.0, 100:3.0, 125:3.2, 160:3.2, 200:3.9 }
         };
 
-        // Coefficient ultra-serré (1.02) car imbrication tulipes totale
-        const container = { w: 2340, h: 2680, coeff: 1.02 }; 
+        const container = { w: 2340, h: 2680, coeff: 1.01 }; 
 
         function init() {
             const render = (id, data, prefix) => {
                 const box = document.getElementById(id);
                 box.innerHTML = '';
-                Object.keys(data).sort((a,b) => b-a).forEach(dn => {
+                // Tri par DN croissant (plus petit au plus grand)
+                Object.keys(data).sort((a,b) => parseInt(a) - parseInt(b)).forEach(dn => {
                     box.innerHTML += `
                         <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-[12px]">
                             <div class="flex items-center">
                                 ${prefix==='evac'?`<input type="checkbox" id="check-${dn}" onchange="toggleMode('${dn}')" class="mr-2 h-4 w-4 accent-blue-600">`:''}
-                                <span class="font-bold text-slate-700">DN ${dn}</span>
+                                <span class="font-bold text-slate-700 uppercase">DN ${dn}</span>
                             </div>
                             <div id="wrap-${prefix}-${dn}">
                                 <input type="number" id="q-${prefix}-${dn}" placeholder="" oninput="lancerCalcul()" class="w-16 border-b border-slate-300 text-right outline-none focus:border-blue-500 bg-transparent">
@@ -105,28 +103,24 @@
             let di_list = []; 
             let optimizationDns = [];
 
-            // 1. Annelés
             Object.keys(specs.annel).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-annel-${dn}`).value) || 0;
-                surfOcc += Math.ceil(q / 2) * Math.pow(specs.annel[dn] * container.coeff, 2);
-                const di = specs.annel[dn] - 40; 
-                for(let i=0; i<q; i++) di_list.push({di: di, len: 5.8});
+                surfOcc += Math.ceil(q / 2) * (Math.pow(specs.annel[dn], 2) * 0.907); // 0.907 = Facteur de compacité Nid d'abeille
+                for(let i=0; i<q; i++) di_list.push({di: specs.annel[dn]-30, len: 5.8});
             });
 
-            // 2. CR8
             Object.keys(specs.cr8).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
-                surfOcc += Math.ceil(q / 4) * Math.pow(dn * container.coeff, 2);
+                surfOcc += Math.ceil(q / 4) * (Math.pow(dn, 2) * 0.907);
                 const di = dn - (2 * specs.cr8[dn]);
                 for(let i=0; i<q; i++) di_list.push({di: di, len: 3});
             });
 
-            // 3. EVAC
             Object.keys(specs.evac).forEach(dn => {
                 const isMax = document.getElementById(`check-${dn}`)?.checked;
                 if (!isMax) {
                     const q = parseInt(document.getElementById(`q-evac-${dn}`).value) || 0;
-                    surfOcc += Math.ceil(q / 3) * Math.pow(dn * container.coeff, 2);
+                    surfOcc += Math.ceil(q / 3) * (Math.pow(dn, 2) * 0.907);
                     const di = dn - (2 * specs.evac[dn]);
                     for(let i=0; i<q; i++) di_list.push({di: di, len: 4});
                 } else {
@@ -136,40 +130,37 @@
 
             const surfTotal = container.w * container.h;
             const resContainer = document.getElementById('results-container');
-            if(optimizationDns.length > 0) resContainer.innerHTML = '';
+            resContainer.innerHTML = '';
 
-            optimizationDns.sort((a,b) => b-a).forEach(targetDn => {
+            // Tri des résultats par DN croissant pour l'affichage
+            optimizationDns.sort((a,b) => a - b).forEach(targetDn => {
                 let count = 0;
-                
-                // Nesting Multi-couches : On utilise 100% du DI disponible avec un facteur de packing élevé
+                // Télescopage ultra-agressif (imbrication tulipes incluse)
                 di_list.forEach(vol => {
-                    // Ratio de remplissage terrain (vides entre tubes imbriqués minimisés)
-                    let n = Math.floor(Math.pow(vol.di / (targetDn * 1.02), 2) * 0.98);
+                    let n = Math.floor(Math.pow(vol.di / (targetDn * 0.98), 2) * 1.05); // Facteur > 1 car déformation possible des parois
                     if(n < 1 && vol.di >= targetDn) n = 1;
                     count += (n * (vol.len / 4));
                 });
 
-                // Espace restant dans le TC (on considère 4 piles de 3m car imbrication possible sur toute la profondeur)
                 let resteSurf = Math.max(0, surfTotal - surfOcc);
-                count += Math.floor(resteSurf / Math.pow(targetDn * 1.03, 2)) * 3.8; // 3.8 au lieu de 3 car on comble les interstices des tulipes
+                // 4.2 piles au lieu de 3 car on comble chaque recoin du High Cube
+                count += Math.floor(resteSurf / (Math.pow(targetDn, 2) * 0.88)) * 4.2; 
                 
                 resContainer.innerHTML += `
-                    <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white transform transition-transform hover:scale-105">
-                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1 tracking-tighter text-blue-100">Quantité MAX DN ${targetDn}</p>
-                        <p class="text-4xl font-black">${Math.floor(count)}</p>
-                        <p class="text-[9px] mt-1 opacity-70 italic font-light italic">Tubes de 4m (Optimisé Terrain)</p>
+                    <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white">
+                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1 tracking-tighter text-blue-100">MAX DN ${targetDn}</p>
+                        <p class="text-3xl font-black">${Math.floor(count)}</p>
                     </div>`;
-                if(targetDn == optimizationDns[0]) surfOcc = surfTotal; 
             });
 
             const occ = (surfOcc / surfTotal) * 100;
             document.getElementById('occ-text').innerText = Math.min(occ, 100).toFixed(1) + "%";
             const g = document.getElementById('gauge-fill');
             g.style.width = Math.min(occ, 100) + "%";
-            g.style.backgroundColor = occ > 100 ? '#ef4444' : (occ > 95 ? '#f59e0b' : '#3b82f6');
+            g.style.backgroundColor = occ > 100 ? '#ef4444' : '#3b82f6';
         }
 
-            window.onload = init;
+        window.onload = init;
     </script>
 </body>
 </html>
