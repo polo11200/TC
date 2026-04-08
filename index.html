@@ -3,183 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PVC Optimizer v4.0 - Réalité Terrain</title>
+    <title>PVC Optimizer v4.1 - Terrain</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-200 min-h-screen p-2 md:p-4 font-sans text-slate-900">
-    <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-blue-600">
+<body class="bg-slate-100 min-h-screen p-2 md:p-4 font-sans text-slate-900">
+    <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-slate-900">
         
-        <div class="bg-slate-800 text-white p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold italic">PVC OPTIMIZER <span class="text-blue-400 text-sm">v4.0 REAL-LOG</span></h1>
-            <button onclick="resetAll()" class="bg-red-600 text-[10px] font-bold py-1 px-3 rounded uppercase">Reset</button>
+        <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold italic tracking-tighter">OPTIMISEUR PVC <span class="text-blue-400 text-sm">v4.1</span></h1>
+            <button onclick="resetAll()" class="bg-red-600 hover:bg-red-700 text-[10px] font-bold py-2 px-4 rounded uppercase transition-all shadow-lg active:scale-95">Remettre à zéro</button>
         </div>
 
         <div class="p-4 grid lg:grid-cols-4 gap-6">
             <div class="space-y-3">
-                <h2 class="font-bold text-orange-700 border-b-2 border-orange-100 pb-1 text-xs uppercase">Annelés (5.8m)</h2>
+                <h2 class="font-bold text-orange-700 border-b-2 border-orange-100 pb-1 text-xs uppercase tracking-tight">Annelés (5.8m)</h2>
                 <div id="annel-inputs" class="space-y-1"></div>
             </div>
 
             <div class="space-y-3">
-                <h2 class="font-bold text-blue-800 border-b-2 border-blue-100 pb-1 text-xs uppercase">CR8 (3m)</h2>
+                <h2 class="font-bold text-blue-800 border-b-2 border-blue-100 pb-1 text-xs uppercase tracking-tight">Assainissement CR8 (3m)</h2>
                 <div id="cr8-inputs" class="space-y-1"></div>
             </div>
 
             <div class="space-y-3">
-                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-1 text-xs uppercase">Évacuation (4m)</h2>
+                <h2 class="font-bold text-green-800 border-b-2 border-green-100 pb-1 text-xs uppercase tracking-tight">Évacuation M1 (4m)</h2>
                 <div id="evac-inputs" class="space-y-1"></div>
             </div>
 
-            <div class="bg-slate-900 rounded-xl p-5 text-white h-fit sticky top-4">
-                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-xs tracking-widest border-b border-slate-700 pb-2">Charge TC 40' HC</h2>
+            <div class="bg-slate-900 rounded-xl p-5 text-white h-fit sticky top-4 shadow-xl">
+                <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-700 pb-2">Rapport de Charge</h2>
                 
-                <div class="mb-6 bg-slate-800 p-3 rounded-lg text-center">
-                    <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Réelle estimée</span>
-                    <span id="occ-text" class="text-3xl font-black">0%</span>
-                    <div class="w-full bg-slate-700 h-2 rounded-full mt-2 overflow-hidden">
-                        <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
+                <div class="mb-6 bg-slate-800 p-4 rounded-lg text-center border border-slate-700">
+                    <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Surface</span>
+                    <span id="occ-text" class="text-4xl font-black">0%</span>
+                    <div class="w-full bg-slate-700 h-2 rounded-full mt-3 overflow-hidden">
+                        <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-700" style="width: 0%"></div>
                     </div>
                 </div>
 
-                <div id="results-container" class="space-y-3"></div>
+                <div id="results-container" class="space-y-3">
+                    <p class="text-[10px] text-slate-500 italic text-center leading-tight">Cochez une case "MAX" pour lancer l'optimisation d'un diamètre.</p>
+                </div>
 
-                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded uppercase text-xs tracking-widest">Calculer</button>
+                <button onclick="lancerCalcul()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded uppercase text-xs tracking-widest transition-all">Lancer le calcul</button>
             </div>
         </div>
     </div>
 
     <script>
         const specs = {
-            annel: { 
-                1030: {de: 1200, di: 1030}, 600: {de: 700, di: 600}, 
-                500: {de: 580, di: 500}, 400: {de: 465, di: 400}, 300: {de: 350, di: 300} 
-            },
+            annel: { 1030:1200, 600:700, 500:580, 400:465, 300:350 },
             cr8: { 400:11.7, 315:9.2, 250:7.3, 200:5.9, 160:4.7, 125:3.7 },
             evac: { 200:3.9, 160:3.2, 125:3.2, 100:3.0, 80:3.0, 75:3.0, 50:3.0, 40:3.0, 32:3.0 }
         };
 
-        const container = { w: 2340, h: 2680, coeff: 1.10 }; // Coeff réduit car terrain optimisé
+        const container = { w: 2340, h: 2680, coeff: 1.08 }; 
 
         function init() {
             const render = (id, data, prefix) => {
                 const box = document.getElementById(id);
                 box.innerHTML = '';
                 Object.keys(data).forEach(dn => {
-                    const isMax = (prefix === 'evac' && (dn == 100 || dn == 32));
                     box.innerHTML += `
-                        <div class="flex justify-between items-center bg-white p-1.5 border rounded shadow-sm text-[11px]">
+                        <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm text-[12px]">
                             <div class="flex items-center">
-                                ${prefix==='evac'?`<input type="checkbox" id="check-${dn}" ${isMax?'checked':''} onchange="toggleMode('${dn}')" class="mr-1 shadow-none">`:''}
-                                <span class="font-bold">DN ${dn}</span>
+                                ${prefix==='evac'?`<input type="checkbox" id="check-${dn}" onchange="toggleMode('${dn}')" class="mr-2 h-4 w-4 accent-blue-600 shadow-none">`:''}
+                                <span class="font-bold text-slate-700">DN ${dn}</span>
                             </div>
                             <div id="wrap-${prefix}-${dn}">
-                                <input type="number" id="q-${prefix}-${dn}" value="0" oninput="lancerCalcul()" class="w-14 border rounded text-right outline-none">
+                                <input type="number" id="q-${prefix}-${dn}" placeholder="" oninput="lancerCalcul()" class="w-16 border-b-2 border-slate-200 text-right outline-none focus:border-blue-500 bg-transparent">
                             </div>
+                            <span id="lbl-${dn}" class="hidden text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded">MAX</span>
                         </div>`;
                 });
             };
             render('annel-inputs', specs.annel, 'annel');
             render('cr8-inputs', specs.cr8, 'cr8');
             render('evac-inputs', specs.evac, 'evac');
-            initValues();
-        }
-
-        function initValues() {
-            // Vos données réelles pour test
-            document.getElementById('q-evac-200').value = 20;
-            document.getElementById('q-evac-160').value = 100;
-            document.getElementById('q-evac-125').value = 200;
-            document.getElementById('q-evac-80').value = 450;
-            document.getElementById('q-evac-50').value = 200;
-            document.getElementById('q-evac-40').value = 900;
-            // DN 100 et 32 sont en MAX
-            toggleMode(100); toggleMode(32);
-            lancerCalcul();
         }
 
         function toggleMode(dn) {
             const check = document.getElementById(`check-${dn}`).checked;
             document.getElementById(`wrap-evac-${dn}`).style.display = check ? 'none' : 'block';
+            document.getElementById(`lbl-${dn}`).style.display = check ? 'block' : 'none';
             lancerCalcul();
         }
 
         function resetAll() {
-            document.querySelectorAll('input[type="number"]').forEach(i => i.value = 0);
+            document.querySelectorAll('input[type="number"]').forEach(i => i.value = '');
+            document.querySelectorAll('input[type="checkbox"]').forEach(c => {
+                c.checked = false;
+                const dn = c.id.split('-')[1];
+                toggleMode(dn);
+            });
             lancerCalcul();
         }
 
         function lancerCalcul() {
             let surfOcc = 0;
-            let dis_dispo = []; 
+            let di_list = []; 
+            let optimizationDns = [];
 
-            // 1. ANNELÉS (5.8m -> 2 piles)
+            // 1. Annelés
             Object.keys(specs.annel).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-annel-${dn}`).value) || 0;
-                surfOcc += Math.ceil(q / 2) * Math.pow(specs.annel[dn].de * container.coeff, 2);
-                for(let i=0; i<q; i++) dis_dispo.push({di: specs.annel[dn].di, len: 5.8});
+                surfOcc += Math.ceil(q / 2) * Math.pow(specs.annel[dn] * container.coeff, 2);
+                const di = specs.annel[dn] - 40; // Estimation épaisseur paroi
+                for(let i=0; i<q; i++) di_list.push({di: di, len: 5.8});
             });
 
-            // 2. CR8 (3m -> 4 piles)
+            // 2. CR8
             Object.keys(specs.cr8).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
-                // Si on peut le mettre dans un annelé, on ne l'ajoute pas à la surface frontale
-                let q_exterieur = q;
-                dis_dispo.forEach(vol => {
-                    if(vol.di > dn * 1.1 && q_exterieur > 0) {
-                        q_exterieur -= 1; // Un CR8 dans un annelé
-                    }
-                });
-                surfOcc += Math.ceil(q_exterieur / 4) * Math.pow(dn * container.coeff, 2);
+                surfOcc += Math.ceil(q / 4) * Math.pow(dn * container.coeff, 2);
                 const di = dn - (2 * specs.cr8[dn]);
-                for(let i=0; i<q; i++) dis_dispo.push({di: di, len: 3});
+                for(let i=0; i<q; i++) di_list.push({di: di, len: 3});
             });
 
-            // 3. EVAC Fixes (4m -> 3 piles)
-            let optimizationDns = [];
+            // 3. EVAC
             Object.keys(specs.evac).forEach(dn => {
                 const isMax = document.getElementById(`check-${dn}`)?.checked;
                 if (!isMax) {
                     const q = parseInt(document.getElementById(`q-evac-${dn}`).value) || 0;
-                    let q_exterieur = q;
-                    dis_dispo.forEach(vol => {
-                        if(vol.di > dn * 1.1 && q_exterieur > 0) { q_exterieur -= 1; }
-                    });
-                    surfOcc += Math.ceil(q_exterieur / 3) * Math.pow(dn * container.coeff, 2);
+                    surfOcc += Math.ceil(q / 3) * Math.pow(dn * container.coeff, 2);
                     const di = dn - (2 * specs.evac[dn]);
-                    for(let i=0; i<q; i++) dis_dispo.push({di: di, len: 4});
+                    for(let i=0; i<q; i++) di_list.push({di: di, len: 4});
                 } else {
                     optimizationDns.push(parseInt(dn));
                 }
             });
 
-            // LOGIQUE DE REMPLISSAGE OPTIMISÉ (Réalité terrain)
             const surfTotal = container.w * container.h;
             const resContainer = document.getElementById('results-container');
-            resContainer.innerHTML = '';
+            if(optimizationDns.length > 0) resContainer.innerHTML = '';
 
             optimizationDns.sort((a,b) => b-a).forEach(targetDn => {
                 let count = 0;
-                // On remplit les volumes intérieurs en priorité
-                dis_dispo.forEach(vol => {
-                    let n = Math.floor(Math.pow(vol.di / (targetDn * 1.05), 2) * 0.90);
+                // Télescopage ultra-agressif (Taux de remplissage 95%)
+                di_list.forEach(vol => {
+                    let ratio = vol.di / (targetDn * 1.05);
+                    let n = Math.floor(Math.pow(ratio, 2) * 0.95);
                     if(n < 1 && vol.di >= targetDn) n = 1;
                     count += (n * (vol.len / 4));
                 });
-                // Puis le vide restant dans le container
+                // Espace restant
                 let resteSurf = Math.max(0, surfTotal - surfOcc);
-                count += Math.floor(resteSurf / Math.pow(targetDn * 1.1, 2)) * 3;
+                count += Math.floor(resteSurf / Math.pow(targetDn * 1.05, 2)) * 3;
                 
                 resContainer.innerHTML += `
-                    <div class="bg-blue-600 p-3 rounded border border-blue-400">
-                        <p class="text-[9px] font-bold opacity-80 uppercase leading-none">DN ${targetDn} MAX</p>
-                        <p class="text-2xl font-black">${Math.floor(count)}</p>
+                    <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white">
+                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1">DN ${targetDn} Suggéré</p>
+                        <p class="text-4xl font-black">${Math.floor(count)}</p>
                     </div>`;
                 if(targetDn == optimizationDns[0]) surfOcc = surfTotal; 
             });
 
             const occ = (surfOcc / surfTotal) * 100;
             document.getElementById('occ-text').innerText = Math.min(occ, 100).toFixed(1) + "%";
-            document.getElementById('gauge-fill').style.width = Math.min(occ, 100) + "%";
+            const g = document.getElementById('gauge-fill');
+            g.style.width = Math.min(occ, 100) + "%";
+            g.style.backgroundColor = occ > 100 ? '#ef4444' : '#3b82f6';
         }
 
         window.onload = init;
