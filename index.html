@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PVC Optimizer v5.3 - Logique Universelle</title>
+    <title>PVC Optimizer v5.4 - Sécurité Saturation</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen p-2 md:p-4 font-sans text-slate-900 text-[13px]">
     <div class="max-w-7xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-slate-900">
         
         <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold italic tracking-tighter text-blue-400">OPTIMISEUR TERRAIN <span class="text-white text-sm opacity-50">v5.3</span></h1>
+            <h1 class="text-xl font-bold italic tracking-tighter text-blue-400">OPTIMISEUR TERRAIN <span class="text-white text-sm opacity-50 text-xs">v5.4 FIX</span></h1>
             <button onclick="resetAll()" class="bg-red-600 hover:bg-red-700 text-[10px] font-bold py-2 px-4 rounded uppercase transition-all active:scale-95">Remettre à zéro</button>
         </div>
 
@@ -33,12 +33,13 @@
             <div class="bg-slate-900 rounded-xl p-5 text-white h-fit sticky top-4 shadow-xl border border-slate-700">
                 <h2 class="text-center font-bold text-blue-400 mb-4 uppercase text-[10px] tracking-widest border-b border-slate-800 pb-2">Capacité de Charge</h2>
                 
-                <div class="mb-6 bg-slate-800 p-4 rounded-lg text-center">
-                    <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Frontale</span>
+                <div id="status-card" class="mb-6 bg-slate-800 p-4 rounded-lg text-center transition-colors duration-300 border border-slate-700">
+                    <span class="text-[10px] text-slate-400 uppercase block mb-1">Occupation Sol</span>
                     <span id="occ-text" class="text-4xl font-black">0%</span>
                     <div class="w-full bg-slate-700 h-2 rounded-full mt-3 overflow-hidden">
                         <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-700" style="width: 0%"></div>
                     </div>
+                    <p id="alert-msg" class="hidden text-red-500 font-bold text-[10px] mt-2 uppercase animate-pulse">Container surchargé !</p>
                 </div>
 
                 <div id="results-container" class="space-y-3 text-center">
@@ -57,7 +58,7 @@
             evac: { 32:3.0, 40:3.0, 50:3.0, 75:3.0, 80:3.0, 100:3.0, 125:3.2, 160:3.2, 200:3.9 }
         };
 
-        const container = { w: 2340, h: 2680 }; 
+        const container = { w: 2340, h: 2680, surf: 6271200 }; 
 
         function init() {
             const render = (id, data, prefix) => {
@@ -104,68 +105,85 @@
             let di_vols = []; 
             let optimizationDns = [];
 
-            // 1. Collecte ANNELÉS (2 piles de 5.8m)
+            // 1. Annelés (Max 24 pour le DN 300 par ex)
             Object.keys(specs.annel).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-annel-${dn}`).value) || 0;
                 surfOcc += Math.ceil(q / 2) * (Math.pow(specs.annel[dn], 2) * 0.907);
-                for(let i=0; i<q; i++) di_vols.push({di: specs.annel[dn] - 40, len: 5.8});
+                for(let i=0; i<q; i++) di_vols.push({di: (specs.annel[dn] - 60) * 0.9, len: 5.8}); 
             });
 
-            // 2. Collecte CR8 (4 piles de 3m)
+            // 2. CR8
             Object.keys(specs.cr8).forEach(dn => {
                 const q = parseInt(document.getElementById(`q-cr8-${dn}`).value) || 0;
                 surfOcc += Math.ceil(q / 4) * (Math.pow(dn, 2) * 0.907);
                 const di = dn - (2 * specs.cr8[dn]);
-                for(let i=0; i<q; i++) di_vols.push({di: di, len: 3});
+                for(let i=0; i<q; i++) di_vols.push({di: di * 0.9, len: 3});
             });
 
-            // 3. Collecte EVAC (3 piles de 4m)
+            // 3. EVAC
             Object.keys(specs.evac).forEach(dn => {
                 const isMax = document.getElementById(`check-${dn}`)?.checked;
+                const qVal = parseInt(document.getElementById(`q-evac-${dn}`).value) || 0;
                 if (!isMax) {
-                    const q = parseInt(document.getElementById(`q-evac-${dn}`).value) || 0;
-                    surfOcc += Math.ceil(q / 3) * (Math.pow(dn, 2) * 0.907);
+                    surfOcc += Math.ceil(qVal / 3) * (Math.pow(dn, 2) * 0.907);
                     const di = dn - (2 * specs.evac[dn]);
-                    for(let i=0; i<q; i++) di_vols.push({di: di, len: 4});
+                    for(let i=0; i<qVal; i++) di_vols.push({di: di * 0.9, len: 4});
                 } else {
                     optimizationDns.push(parseInt(dn));
                 }
             });
 
-            const surfTotal = container.w * container.h;
-            const resContainer = document.getElementById('results-container');
-            resContainer.innerHTML = '';
+            const occ = (surfOcc / container.surf) * 100;
+            const isOverloaded = occ > 105; // Marge de 5% tolérée
 
-            // Optimisation par télescopage universel
+            // Affichage Occupation
+            document.getElementById('occ-text').innerText = occ.toFixed(1) + "%";
+            const g = document.getElementById('gauge-fill');
+            const card = document.getElementById('status-card');
+            const alertMsg = document.getElementById('alert-msg');
+            
+            g.style.width = Math.min(occ, 100) + "%";
+            
+            if(isOverloaded) {
+                g.style.backgroundColor = '#ef4444';
+                card.classList.add('border-red-500', 'bg-red-900/20');
+                alertMsg.classList.remove('hidden');
+            } else {
+                g.style.backgroundColor = occ > 95 ? '#f59e0b' : '#3b82f6';
+                card.classList.remove('border-red-500', 'bg-red-900/20');
+                alertMsg.classList.add('hidden');
+            }
+
+            // Affichage Résultats
+            const resContainer = document.getElementById('results-container');
+            if(isOverloaded) {
+                resContainer.innerHTML = '<p class="text-red-400 font-bold uppercase text-[10px]">Impossible d\'optimiser : Container déjà plein au sol.</p>';
+                return;
+            }
+
+            if(optimizationDns.length > 0) resContainer.innerHTML = '';
+
             optimizationDns.sort((a,b) => a - b).forEach(targetDn => {
                 let count = 0;
-                // On remplit TOUS les volumes intérieurs collectés plus haut
+                // Calcul strict de télescopage
                 di_vols.forEach(vol => {
-                    // Facteur terrain : les tubes s'écrasent un peu, on gagne 5% sur le DI
-                    let n = Math.floor(Math.pow((vol.di * 1.02) / (targetDn * 0.98), 2) * 1.05); 
-                    if(n < 1 && vol.di >= targetDn) n = 1;
+                    // Cercle dans cercle : (DI_Hote / DE_Cible)^2 * coefficient de packing (0.82 pour le nid d'abeille réel)
+                    let n = Math.floor(Math.pow(vol.di / (targetDn * 1.05), 2) * 0.82); 
+                    if(n < 1 && vol.di >= (targetDn * 1.05)) n = 1;
                     count += (n * (vol.len / 4));
                 });
 
-                // On remplit le vide frontal restant dans le container
-                let resteSurf = Math.max(0, surfTotal - surfOcc);
-                count += Math.floor(resteSurf / (Math.pow(targetDn, 2) * 0.88)) * 4.1; 
+                let resteSurf = Math.max(0, container.surf - surfOcc);
+                // Dans le vide restant, on applique le même coefficient de packing strict (0.85)
+                count += Math.floor((resteSurf * 0.85) / Math.pow(targetDn, 2)) * 3; 
                 
                 resContainer.innerHTML += `
                     <div class="bg-blue-600 p-4 rounded shadow-lg border-l-4 border-white mb-2">
-                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1 tracking-tighter text-blue-100">MAX DN ${targetDn}</p>
+                        <p class="text-[10px] font-bold opacity-80 uppercase leading-none mb-1 tracking-tighter text-blue-100 uppercase">MAX DN ${targetDn}</p>
                         <p class="text-3xl font-black">${Math.floor(count)}</p>
                     </div>`;
-                
-                // Si on a optimisé un diamètre, on considère la surface frontale comme saturée pour le suivant
-                if(targetDn == optimizationDns[0]) surfOcc = surfTotal; 
+                if(targetDn == optimizationDns[0]) surfOcc = container.surf; 
             });
-
-            const occ = (surfOcc / surfTotal) * 100;
-            document.getElementById('occ-text').innerText = Math.min(occ, 100).toFixed(1) + "%";
-            const g = document.getElementById('gauge-fill');
-            g.style.width = Math.min(occ, 100) + "%";
-            g.style.backgroundColor = occ > 100 ? '#ef4444' : (occ > 95 ? '#f59e0b' : '#3b82f6');
         }
 
         window.onload = init;
