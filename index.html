@@ -3,108 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optimiseur Logistique PVC - 40ft</title>
+    <title>Calculateur Optimisé PVC - 40ft</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .input-group:nth-child(even) { background-color: #f9fafb; }
+    </style>
 </head>
-<body class="bg-gray-100 p-4 md:p-8">
-    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
-        <h1 class="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">Calculateur de Container PVC 40'</h1>
-        
-        <div class="grid md:grid-cols-2 gap-8">
+<body class="bg-slate-100 min-h-screen p-4">
+    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div class="bg-blue-800 p-6 text-white">
+            <h1 class="text-2xl font-bold">Optimiseur de Commandes Tubes PVC</h1>
+            <p class="text-blue-200 opacity-80">Configuration Container 40' (Standard 70m³ utiles)</p>
+        </div>
+
+        <div class="p-6 grid md:grid-cols-2 gap-8">
             <div>
-                <h2 class="text-lg font-semibold mb-4 text-gray-700">Tubes CR8 (3m) - Prioritaires</h2>
-                <div id="cr8-inputs" class="space-y-2">
+                <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center">
+                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded mr-2 text-xs">1</span> 
+                    Besoins CR8 (3ml)
+                </h2>
+                <div id="cr8-list" class="border rounded-lg overflow-hidden">
                     </div>
 
-                <h2 class="text-lg font-semibold mt-6 mb-4 text-gray-700">Tubes Évacuation (4m)</h2>
-                <div class="flex items-center space-y-2">
-                    <label class="w-1/2 text-sm text-gray-600">DN 100 à optimiser :</label>
-                    <input type="text" id="target-dn" value="100" class="w-1/2 p-2 border rounded bg-gray-50 font-bold" readonly>
+                <div class="mt-8">
+                    <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded mr-2 text-xs">2</span> 
+                        Paramètres d'Optimisation
+                    </h2>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Tube de remplissage (4ml) :</label>
+                        <select id="filler-dn" class="w-full p-2 border rounded font-bold text-blue-700">
+                            <option value="100">Évacuation DN 100</option>
+                            <option value="125">Évacuation DN 125</option>
+                            <option value="160">Évacuation DN 160</option>
+                        </select>
+                        <button onclick="lancerOptimisation()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg active:scale-95">
+                            OPTIMISER LE CONTAINER
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
-                <h2 class="text-xl font-bold text-blue-900 mb-4">Résultat de l'Optimisation</h2>
-                <div class="space-y-4">
-                    <div class="flex justify-between">
-                        <span>Occupation Frontale :</span>
-                        <span id="res-occ" class="font-bold text-lg">-</span>
+            <div class="flex flex-col">
+                <h2 class="text-lg font-bold mb-4 text-slate-700">Rapport de Chargement</h2>
+                <div class="flex-1 space-y-4">
+                    <div class="bg-white border rounded-xl p-4 shadow-sm">
+                        <div class="text-sm text-slate-500 uppercase font-semibold">Espace Frontal Utilisé</div>
+                        <div id="gauge-container" class="w-full bg-slate-200 h-4 rounded-full mt-2 overflow-hidden">
+                            <div id="gauge-fill" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div id="occ-text" class="text-right font-bold mt-1 text-slate-700">0%</div>
                     </div>
-                    <div class="flex justify-between items-center bg-white p-4 rounded shadow-sm">
-                        <span class="text-blue-800 font-semibold text-lg">TOTAL DN 100 (4m) :</span>
-                        <span id="res-total" class="font-black text-3xl text-blue-600">0</span>
+
+                    <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 text-center">
+                        <div class="text-blue-800 font-bold uppercase text-sm tracking-wider">Quantité d'ajustement préconisée</div>
+                        <div class="flex items-center justify-center mt-2">
+                            <span id="res-dn" class="text-2xl font-bold text-blue-900 mr-2">DN 100 :</span>
+                            <span id="res-val" class="text-5xl font-black text-blue-600 tracking-tighter">0</span>
+                            <span class="ml-2 text-blue-800 font-semibold">tubes</span>
+                        </div>
+                        <p class="text-xs text-blue-700 mt-4 opacity-75">
+                            Ce calcul intègre le télescopage dans les tubes CR8 et l'utilisation des interstices entre tulipes (Coefficient 1.15).
+                        </p>
                     </div>
-                    <p class="text-xs text-gray-500 italic">Note : Calcul basé sur un alignement de tulipes du même côté (Coefficient 1.15) et un empilement sur 4 rangées (3m) et 3 rangées (4m).</p>
+
+                    <div id="alerte-poids" class="hidden bg-orange-50 border border-orange-200 p-4 rounded-lg text-orange-800 text-sm italic">
+                        ⚠️ Attention : Le volume est optimisé, mais vérifiez le poids total (max 27t) auprès de votre transporteur.
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const specsCR8 = {
-            630: {e: 18.4, q: 0}, 500: {e: 14.6, q: 0}, 400: {e: 11.7, q: 0},
-            315: {e: 9.2, q: 0}, 250: {e: 7.3, q: 0}, 200: {e: 5.9, q: 400},
-            160: {e: 4.7, q: 0}, 125: {e: 3.7, q: 0}
+        const specs = {
+            cr8: {
+                400: {e: 11.7, l: 3}, 315: {e: 9.2, l: 3}, 250: {e: 7.3, l: 3},
+                200: {e: 5.9, l: 3}, 160: {e: 4.7, l: 3}, 125: {e: 3.7, l: 3}
+            },
+            evac: { 100: {e: 3.0, l: 4}, 125: {e: 3.2, l: 4}, 160: {e: 3.2, l: 4} }
         };
 
         const container = { w: 2340, h: 2380, coeff: 1.15 };
 
-        function initInputs() {
-            const containerDiv = document.getElementById('cr8-inputs');
-            Object.keys(specsCR8).reverse().forEach(dn => {
+        function init() {
+            const list = document.getElementById('cr8-list');
+            Object.keys(specs.cr8).forEach(dn => {
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between';
+                div.className = 'input-group flex items-center p-3 border-b last:border-0';
                 div.innerHTML = `
-                    <label class="text-sm font-medium">DN ${dn} (CR8) :</label>
-                    <input type="number" id="input-${dn}" value="0" onchange="calculer()" 
-                           class="w-24 p-1 border rounded text-right focus:ring-2 focus:ring-blue-400">
+                    <span class="w-20 font-bold text-slate-600">DN ${dn}</span>
+                    <input type="number" id="q-${dn}" placeholder="0" class="ml-auto w-24 p-2 border rounded focus:border-blue-500 outline-none text-right">
                 `;
-                containerDiv.appendChild(div);
+                list.appendChild(div);
             });
+            // Valeurs par défaut de votre demande
+            document.getElementById('q-160').value = 50;
+            document.getElementById('q-200').value = 400;
+            document.getElementById('q-250').value = 50;
+            document.getElementById('q-315').value = 100;
+            document.getElementById('q-400').value = 10;
         }
 
-        function calculer() {
+        function lancerOptimisation() {
             let surfaceOccupee = 0;
-            let totalTelescopage = 0;
-            const targetDN = 100;
+            let capTelescopage = 0;
+            const targetDN = parseInt(document.getElementById('filler-dn').value);
 
-            Object.keys(specsCR8).forEach(dn => {
-                const qte = parseInt(document.getElementById(`input-${dn}`).value) || 0;
+            // 1. Analyser les CR8 entrés
+            Object.keys(specs.cr8).forEach(dn => {
+                const qte = parseInt(document.getElementById(`q-${dn}`).value) || 0;
                 const dnInt = parseInt(dn);
                 
-                // 1. Calcul encombrement (4 rangées de 3m dans 12m)
+                // Encombrement frontal (4 piles de 3m dans 12m)
                 const qteFrontale = Math.ceil(qte / 4);
                 surfaceOccupee += qteFrontale * Math.pow(dnInt * container.coeff, 2);
 
-                // 2. Calcul Télescopage
-                const di = dnInt - (2 * specsCR8[dn].e);
-                let possibleDansUn = Math.floor(Math.pow(di / (targetDN * 1.05), 2) * 0.78);
-                if (possibleDansUn < 1 && di >= 105) possibleDansUn = 1;
+                // Calcul du télescopage (DI du tube hôte)
+                const di = dnInt - (2 * specs.cr8[dn].e);
+                // Estimation du nombre de tubes filler pouvant entrer (mathématique de packing)
+                let ratio = di / (targetDN * 1.05);
+                let possibleDansUn = Math.floor(Math.pow(ratio, 2) * 0.78);
+                if (possibleDansUn < 1 && di >= (targetDN + 5)) possibleDansUn = 1;
                 
-                totalTelescopage += (possibleDansUn * qte);
+                capTelescopage += (possibleDansUn * qte);
             });
 
             const surfaceDispo = container.w * container.h;
             const occPourcent = (surfaceOccupee / surfaceDispo) * 100;
 
-            // 3. Espaces vides entre tubes pour DN 100
-            const interstices = Math.floor((surfaceDispo - surfaceOccupee) / Math.pow(110, 2));
+            // 2. Calculer le remplissage
+            // Interstices (vides entre les tubes empilés)
+            const intersticesFrontaux = Math.floor((surfaceDispo - surfaceOccupee) / Math.pow(targetDN * 1.1, 2));
             
-            // Ajustement 4m (3 piles) vs 3m (4 piles)
-            const finalDN100 = Math.floor((totalTelescopage + interstices) * 0.75);
+            // On ajuste car le filler fait 4m (3 piles) et le CR8 fait 3m (4 piles)
+            // Le filler peut aussi remplir les interstices sur toute la longueur
+            const totalFiller = Math.floor((capTelescopage + (intersticesFrontaux * 3)) * 0.85);
 
-            document.getElementById('res-occ').innerText = occPourcent.toFixed(1) + "%";
-            document.getElementById('res-total').innerText = finalDN100;
+            // UI Update
+            document.getElementById('occ-text').innerText = occPourcent.toFixed(1) + "%";
+            document.getElementById('gauge-fill').style.width = Math.min(occPourcent, 100) + "%";
+            document.getElementById('res-val').innerText = occPourcent > 100 ? "Surcharge" : totalFiller;
+            document.getElementById('res-dn').innerText = "DN " + targetDN + " :";
             
             if (occPourcent > 100) {
-                document.getElementById('res-occ').classList.add('text-red-600');
+                document.getElementById('gauge-fill').classList.replace('bg-blue-500', 'bg-red-500');
             } else {
-                document.getElementById('res-occ').classList.remove('text-red-600');
+                document.getElementById('gauge-fill').classList.replace('bg-red-500', 'bg-blue-500');
+                document.getElementById('alerte-poids').classList.remove('hidden');
             }
         }
 
-        initInputs();
-        calculer();
+        init();
     </script>
 </body>
 </html>
