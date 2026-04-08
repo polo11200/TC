@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimiseur Logistique PVC - 40ft</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">Calculateur de Container PVC 40'</h1>
+        
+        <div class="grid md:grid-cols-2 gap-8">
+            <div>
+                <h2 class="text-lg font-semibold mb-4 text-gray-700">Tubes CR8 (3m) - Prioritaires</h2>
+                <div id="cr8-inputs" class="space-y-2">
+                    </div>
+
+                <h2 class="text-lg font-semibold mt-6 mb-4 text-gray-700">Tubes Évacuation (4m)</h2>
+                <div class="flex items-center space-y-2">
+                    <label class="w-1/2 text-sm text-gray-600">DN 100 à optimiser :</label>
+                    <input type="text" id="target-dn" value="100" class="w-1/2 p-2 border rounded bg-gray-50 font-bold" readonly>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                <h2 class="text-xl font-bold text-blue-900 mb-4">Résultat de l'Optimisation</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span>Occupation Frontale :</span>
+                        <span id="res-occ" class="font-bold text-lg">-</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-white p-4 rounded shadow-sm">
+                        <span class="text-blue-800 font-semibold text-lg">TOTAL DN 100 (4m) :</span>
+                        <span id="res-total" class="font-black text-3xl text-blue-600">0</span>
+                    </div>
+                    <p class="text-xs text-gray-500 italic">Note : Calcul basé sur un alignement de tulipes du même côté (Coefficient 1.15) et un empilement sur 4 rangées (3m) et 3 rangées (4m).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const specsCR8 = {
+            630: {e: 18.4, q: 0}, 500: {e: 14.6, q: 0}, 400: {e: 11.7, q: 0},
+            315: {e: 9.2, q: 0}, 250: {e: 7.3, q: 0}, 200: {e: 5.9, q: 400},
+            160: {e: 4.7, q: 0}, 125: {e: 3.7, q: 0}
+        };
+
+        const container = { w: 2340, h: 2380, coeff: 1.15 };
+
+        function initInputs() {
+            const containerDiv = document.getElementById('cr8-inputs');
+            Object.keys(specsCR8).reverse().forEach(dn => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between';
+                div.innerHTML = `
+                    <label class="text-sm font-medium">DN ${dn} (CR8) :</label>
+                    <input type="number" id="input-${dn}" value="0" onchange="calculer()" 
+                           class="w-24 p-1 border rounded text-right focus:ring-2 focus:ring-blue-400">
+                `;
+                containerDiv.appendChild(div);
+            });
+        }
+
+        function calculer() {
+            let surfaceOccupee = 0;
+            let totalTelescopage = 0;
+            const targetDN = 100;
+
+            Object.keys(specsCR8).forEach(dn => {
+                const qte = parseInt(document.getElementById(`input-${dn}`).value) || 0;
+                const dnInt = parseInt(dn);
+                
+                // 1. Calcul encombrement (4 rangées de 3m dans 12m)
+                const qteFrontale = Math.ceil(qte / 4);
+                surfaceOccupee += qteFrontale * Math.pow(dnInt * container.coeff, 2);
+
+                // 2. Calcul Télescopage
+                const di = dnInt - (2 * specsCR8[dn].e);
+                let possibleDansUn = Math.floor(Math.pow(di / (targetDN * 1.05), 2) * 0.78);
+                if (possibleDansUn < 1 && di >= 105) possibleDansUn = 1;
+                
+                totalTelescopage += (possibleDansUn * qte);
+            });
+
+            const surfaceDispo = container.w * container.h;
+            const occPourcent = (surfaceOccupee / surfaceDispo) * 100;
+
+            // 3. Espaces vides entre tubes pour DN 100
+            const interstices = Math.floor((surfaceDispo - surfaceOccupee) / Math.pow(110, 2));
+            
+            // Ajustement 4m (3 piles) vs 3m (4 piles)
+            const finalDN100 = Math.floor((totalTelescopage + interstices) * 0.75);
+
+            document.getElementById('res-occ').innerText = occPourcent.toFixed(1) + "%";
+            document.getElementById('res-total').innerText = finalDN100;
+            
+            if (occPourcent > 100) {
+                document.getElementById('res-occ').classList.add('text-red-600');
+            } else {
+                document.getElementById('res-occ').classList.remove('text-red-600');
+            }
+        }
+
+        initInputs();
+        calculer();
+    </script>
+</body>
+</html>
